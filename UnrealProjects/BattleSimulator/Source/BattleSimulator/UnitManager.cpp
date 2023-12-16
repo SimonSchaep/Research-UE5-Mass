@@ -3,6 +3,7 @@
 
 #include "UnitManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "BattleSimGameMode.h"
 
 // Sets default values
 UUnitManager::UUnitManager()
@@ -63,8 +64,8 @@ void UUnitManager::SpawnUnits()
 	{
 		SpawnTransform.SetLocation(FVector(
 			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
-			FMath::RandRange(0, SpawnPosRange),
-			60));
+			FMath::RandRange(SpawnPosRange/2, SpawnPosRange),
+			100));
 		SpawnUnit(SpawnTransform);
 	}
 	NextTeamId = 1;
@@ -72,8 +73,8 @@ void UUnitManager::SpawnUnits()
 	{
 		SpawnTransform.SetLocation(FVector(
 			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
-			FMath::RandRange(-SpawnPosRange, 0),
-			60));
+			FMath::RandRange(-SpawnPosRange, -SpawnPosRange/2),
+			100));
 		SpawnUnit(SpawnTransform);
 	}
 }

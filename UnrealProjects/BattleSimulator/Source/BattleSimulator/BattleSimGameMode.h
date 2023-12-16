@@ -4,19 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "BattleSim.generated.h"
+#include "BattleSimGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BATTLESIMULATOR_API ABattleSim : public AGameModeBase
+class BATTLESIMULATOR_API ABattleSimGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
 public:
 	// Sets default values for this actor's properties
-	ABattleSim();
+	ABattleSimGameMode();
+
+	UFUNCTION(BlueprintCallable)
+	void RestartGame();
 
 	class UUnitManager* GetUnitManager()const;
 

@@ -4,6 +4,7 @@
 #include "MoveComponent.h"
 #include "TargetAcquisitionComponent.h"
 #include "AIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UMoveComponent::UMoveComponent()
@@ -39,13 +40,11 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	FVector Direction = (TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation() - GetOwner()->GetActorLocation()).GetUnsafeNormal2D();
-	GetOwner()->SetActorRotation(Direction.Rotation());
 
 	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
-		//AIController->MoveToLocation(TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation(), StopRange);
-		//AIController->;		
-		GetOwner()->AddActorWorldOffset(Direction * MoveSpeed * DeltaTime, true);		
+		auto Result = AIController->MoveToLocation(TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation(), StopRange);
+		GetOwner()->SetActorRotation(Direction.Rotation());
 		bIsRunning = true;
 	}
 	else
@@ -58,4 +57,3 @@ bool UMoveComponent::GetIsRunning() const
 {
 	return bIsRunning;
 }
-

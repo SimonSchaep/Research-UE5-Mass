@@ -3,7 +3,7 @@
 
 #include "HealthComponent.h"
 #include "UnitManager.h"
-#include "BattleSim.h"
+#include "BattleSimGameMode.h"
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -21,7 +21,7 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ABattleSim* GameMode = Cast<ABattleSim>(GetWorld()->GetAuthGameMode());
+	ABattleSimGameMode* GameMode = Cast<ABattleSimGameMode>(GetWorld()->GetAuthGameMode());
 	UnitManager = GameMode->GetUnitManager();	
 }
 
@@ -41,7 +41,12 @@ void UHealthComponent::DoDamage(float Amount)
 	if (CurrentHealth <= 0)
 	{
 		UnitManager->UnRegisterUnit(GetOwner());
-		GetOwner()->Destroy();
+		OnDeath.Broadcast();
 	}
+}
+
+bool UHealthComponent::HasDied() const
+{
+	return CurrentHealth <= 0;
 }
 

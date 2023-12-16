@@ -3,7 +3,7 @@
 
 #include "TargetAcquisitionComponent.h"
 #include "UnitManager.h"
-#include "BattleSim.h"
+#include "BattleSimGameMode.h"
 
 // Sets default values for this component's properties
 UTargetAcquisitionComponent::UTargetAcquisitionComponent()
@@ -21,7 +21,7 @@ void UTargetAcquisitionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ABattleSim* GameMode = Cast<ABattleSim>(GetWorld()->GetAuthGameMode());
+	ABattleSimGameMode* GameMode = Cast<ABattleSimGameMode>(GetWorld()->GetAuthGameMode());
 	UnitManager = GameMode->GetUnitManager();
 
 	TeamId = UnitManager->GetNextTeamId();

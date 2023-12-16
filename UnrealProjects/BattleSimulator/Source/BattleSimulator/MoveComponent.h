@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Components/ActorComponent.h"
 #include "MoveComponent.generated.h"
 
@@ -33,9 +34,6 @@ private:
 	float StopRangeSqr;
 
 	bool bIsRunning = false;
-
-	UPROPERTY(EditAnywhere)
-		float MoveSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere)
 		float StopRange = 150.f;

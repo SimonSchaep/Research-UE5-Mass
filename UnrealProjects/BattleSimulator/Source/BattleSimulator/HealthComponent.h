@@ -26,7 +26,14 @@ public:
 	UPROPERTY(BlueprintAssignable)
 		FOnTakeDamage OnTakeDamage;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+	UPROPERTY(BlueprintAssignable)
+		FOnDeath OnDeath;
+
 	void DoDamage(float Amount);
+
+	UFUNCTION(BlueprintCallable)
+	bool HasDied()const;
 
 private:
 	class UUnitManager* UnitManager;
