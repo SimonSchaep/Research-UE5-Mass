@@ -31,13 +31,15 @@ private:
 	void SpawnUnits();
 	void SpawnUnit(const FTransform& SpawnTransform);
 
+	int GetUnitCount()const;
+
 	TArray<TArray<AActor*>> Units;
 
 	UPROPERTY(EditAnywhere)
 		int SpawnCount = 100;
 
 	UPROPERTY(EditAnywhere)
-		int SpawnPosRange = 10000;
+		int SpawnPosRange = 50000;
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AActor> UnitTemplate;

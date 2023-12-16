@@ -8,7 +8,7 @@
 UUnitManager::UUnitManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	Units.Add(TArray<AActor*>());
 	Units.Add(TArray<AActor*>());
@@ -30,6 +30,13 @@ void UUnitManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit count: %i"), GetUnitCount()));
+
+	if (Units[0].Num() == 0 || Units[1].Num() == 0)
+	{
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+	}
 }
 
 TArray<AActor*>& UUnitManager::GetAllEnemyUnits(int TeamId)
@@ -51,13 +58,22 @@ int UUnitManager::GetNextTeamId() const
 void UUnitManager::SpawnUnits()
 {
 	FTransform SpawnTransform{};
-	for (int i{}; i < SpawnCount; ++i)
+	NextTeamId = 0;
+	for (int i{}; i < SpawnCount / 2; ++i)
 	{
 		SpawnTransform.SetLocation(FVector(
 			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
-			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
+			FMath::RandRange(0, SpawnPosRange),
 			60));
-		NextTeamId = i % 2;
+		SpawnUnit(SpawnTransform);
+	}
+	NextTeamId = 1;
+	for (int i{}; i < SpawnCount / 2; ++i)
+	{
+		SpawnTransform.SetLocation(FVector(
+			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
+			FMath::RandRange(-SpawnPosRange, 0),
+			60));
 		SpawnUnit(SpawnTransform);
 	}
 }
@@ -66,5 +82,10 @@ void UUnitManager::SpawnUnit(const FTransform& SpawnTransform)
 {
 	AActor* SpawnedActor = GetWorld()->SpawnActor(UnitTemplate, &SpawnTransform);
 	Units[NextTeamId].Add(SpawnedActor);
+}
+
+int UUnitManager::GetUnitCount() const
+{
+	return Units[0].Num() + Units[1].Num();
 }
 

@@ -45,8 +45,13 @@ void UAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-void UAttackComponent::AttackTarget()
+void UAttackComponent::DamageTarget()
 {
 	TargetAcquisitionComponent->GetClosestTarget()->GetComponentByClass<UHealthComponent>()->DoDamage(Damage);
+}
+
+void UAttackComponent::AttackTarget()
+{	
+	OnAttack.Broadcast();
 }
 

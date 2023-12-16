@@ -32,12 +32,30 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (TargetAcquisitionComponent->GetClosestTarget() != nullptr && TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
+	if (TargetAcquisitionComponent->GetClosestTarget() == nullptr)
+	{
+		bIsRunning = false;
+		return;
+	}
+
+	FVector Direction = (TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation() - GetOwner()->GetActorLocation()).GetUnsafeNormal2D();
+	GetOwner()->SetActorRotation(Direction.Rotation());
+
+	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
 		//AIController->MoveToLocation(TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation(), StopRange);
-		//AIController->;
-		FVector Direction = (TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation() - GetOwner()->GetActorLocation()).GetUnsafeNormal2D();
-		GetOwner()->AddActorWorldOffset(Direction * MoveSpeed * DeltaTime, true);
+		//AIController->;		
+		GetOwner()->AddActorWorldOffset(Direction * MoveSpeed * DeltaTime, true);		
+		bIsRunning = true;
 	}
+	else
+	{
+		bIsRunning = false;
+	}
+}
+
+bool UMoveComponent::GetIsRunning() const
+{
+	return bIsRunning;
 }
 
