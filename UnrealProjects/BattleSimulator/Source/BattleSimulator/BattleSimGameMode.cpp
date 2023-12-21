@@ -11,14 +11,20 @@ ABattleSimGameMode::ABattleSimGameMode()
 	UnitManager = CreateDefaultSubobject<UUnitManager>(TEXT("UnitManager"));
 }
 
-void ABattleSimGameMode::RestartGame()
+void ABattleSimGameMode::StartPlay()
 {
-	//Only restart when game has ended
-	if (!UGameplayStatics::IsGamePaused(GetWorld()))
-	{
-		return;
-	}
+	Super::StartPlay();
+}
 
+
+
+void ABattleSimGameMode::StartSpawning()
+{
+	UnitManager->SpawnUnits();
+}
+
+void ABattleSimGameMode::Restart()
+{
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 

@@ -22,8 +22,6 @@ UUnitManager::UUnitManager()
 void UUnitManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SpawnUnits();
 }
 
 // Called every frame
@@ -33,11 +31,6 @@ void UUnitManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit count: %i"), GetUnitCount()));
-
-	if (Units[0].Num() == 0 || Units[1].Num() == 0)
-	{
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
-	}
 }
 
 TArray<AActor*>& UUnitManager::GetAllEnemyUnits(int TeamId)

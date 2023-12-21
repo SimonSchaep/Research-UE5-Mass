@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "AIPawnMovement.generated.h"
 

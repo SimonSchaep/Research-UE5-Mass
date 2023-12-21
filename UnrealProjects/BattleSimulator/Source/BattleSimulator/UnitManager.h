@@ -27,8 +27,9 @@ public:
 
 	int GetNextTeamId()const;
 
-private:
 	void SpawnUnits();
+
+private:
 	void SpawnUnit(const FTransform& SpawnTransform);
 
 	int GetUnitCount()const;

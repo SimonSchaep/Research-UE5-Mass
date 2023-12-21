@@ -18,8 +18,13 @@ public:
 	// Sets default values for this actor's properties
 	ABattleSimGameMode();
 
+	virtual void StartPlay()override;
+
 	UFUNCTION(BlueprintCallable)
-	void RestartGame();
+	void StartSpawning();
+
+	UFUNCTION(BlueprintCallable)
+	void Restart();
 
 	class UUnitManager* GetUnitManager()const;
 

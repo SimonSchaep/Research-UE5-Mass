@@ -43,12 +43,14 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
-		auto Result = AIController->MoveToLocation(TargetAcquisitionComponent->GetClosestTarget()->GetActorLocation(), StopRange);
-		GetOwner()->SetActorRotation(Direction.Rotation());
+		AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), StopRange);
 		bIsRunning = true;
 	}
 	else
 	{
+		AIController->StopMovement();
+		FRotator Rotation = FRotator(0, Direction.ToOrientationRotator().Yaw, 0);
+		GetOwner()->SetActorRotation(Rotation);
 		bIsRunning = false;
 	}
 }

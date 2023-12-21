@@ -38,11 +38,10 @@ void UAIPawnMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 		if (!Delta.IsNearlyZero(1e-6f))
 		{
 			const FVector OldLocation = UpdatedComponent->GetComponentLocation();
-			const FQuat Rotation = UpdatedComponent->GetComponentQuat();
+			const FQuat Rotation = Delta.ToOrientationQuat();
 
 			FHitResult Hit{};
 			SafeMoveUpdatedComponent(Delta, Rotation, true, Hit);
-
 		}
 
 		//Needs to be done for movecomponent to work
