@@ -22,7 +22,7 @@ public:
 
 	void AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId);
 
-	const TArray<TArray<FMassEntityHandle>>& GetPossibleTargetEntities(int ArmyId)const;
+	const TArray<TArray<FMassEntityHandle>>& GetPossibleTargetEntities()const;
 
 private:
 	TArray<TArray<FMassEntityHandle>> PossibleTargetEntities;

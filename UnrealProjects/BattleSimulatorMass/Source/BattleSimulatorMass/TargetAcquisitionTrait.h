@@ -17,13 +17,4 @@ class BATTLESIMULATORMASS_API UTargetAcquisitionTrait : public UMassEntityTraitB
 protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
 
-private:
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-		float Range = 200;
-
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-		float AttackDelay = 1.f;
-
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-		float Damage = 20;
 };

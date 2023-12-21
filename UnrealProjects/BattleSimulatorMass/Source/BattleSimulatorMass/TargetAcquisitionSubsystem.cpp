@@ -24,7 +24,7 @@ void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandl
 	PossibleTargetEntities[ArmyId].Add(Handle);
 }
 
-const TArray<TArray<FMassEntityHandle>>& UTargetAcquisitionSubsystem::GetPossibleTargetEntities(int ArmyId) const
+const TArray<TArray<FMassEntityHandle>>& UTargetAcquisitionSubsystem::GetPossibleTargetEntities() const
 {
 	return PossibleTargetEntities;
 }

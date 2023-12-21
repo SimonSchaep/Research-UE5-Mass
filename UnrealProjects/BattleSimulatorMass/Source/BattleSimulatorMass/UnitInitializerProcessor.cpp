@@ -82,7 +82,7 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				const TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
 				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
 				const int32 NumEntities = Context.GetNumEntities();
-				for (int32 i = 0; i < NumEntities; ++i)
+				for (int32 i{}; i < NumEntities; ++i)
 				{
 					//Spawn Transform
 					const int32 AuxIndex = FMath::RandRange(0, Transforms.Num() - 1);
@@ -112,7 +112,7 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 
 				//Army Id
 				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-				for (int32 i = 0; i < Context.GetNumEntities(); ++i)
+				for (int32 i{}; i < Context.GetNumEntities(); ++i)
 				{
 					ArmyIdList[i].ArmyId = UnitArmyId;
 

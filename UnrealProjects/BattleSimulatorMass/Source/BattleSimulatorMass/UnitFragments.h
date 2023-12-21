@@ -44,7 +44,7 @@ struct BATTLESIMULATORMASS_API FTargetAcquisitionFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	class AActor* CurrentTarget;
+	FMassEntityHandle CurrentTarget;
 
 	float ClosestTargetDistanceSqr = FLT_MAX;
 };

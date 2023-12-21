@@ -4,24 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "MassProcessor.h"
-#include "UnitProcessor.generated.h"
+#include "TargetAcquisitionProcessor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BATTLESIMULATORMASS_API UUnitProcessor : public UMassProcessor
+class BATTLESIMULATORMASS_API UTargetAcquisitionProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
 	
 public:
-	UUnitProcessor();
+	UTargetAcquisitionProcessor();
 
 protected:
+	virtual void Initialize(UObject& Owner)override;
 	virtual void ConfigureQueries() override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)override;
 
 private:
 	FMassEntityQuery EntityQuery;
 
+	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
 };
