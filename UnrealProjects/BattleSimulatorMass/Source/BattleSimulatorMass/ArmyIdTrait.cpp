@@ -8,5 +8,5 @@
 
 void UArmyIdTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	BuildContext.AddFragment_GetRef<FArmyIdFragment>();
+	BuildContext.AddFragment<FArmyIdFragment>();
 }

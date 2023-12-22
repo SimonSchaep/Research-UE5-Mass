@@ -21,6 +21,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId);
+	void RemovePossibleTargetEntity(const FMassEntityHandle& Handle);
 
 	const TArray<TArray<FMassEntityHandle>>& GetPossibleTargetEntities()const;
 

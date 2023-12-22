@@ -24,6 +24,14 @@ void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandl
 	PossibleTargetEntities[ArmyId].Add(Handle);
 }
 
+void UTargetAcquisitionSubsystem::RemovePossibleTargetEntity(const FMassEntityHandle& Handle)
+{
+	for (auto Array : PossibleTargetEntities)
+	{
+		Array.Remove(Handle);
+	}
+}
+
 const TArray<TArray<FMassEntityHandle>>& UTargetAcquisitionSubsystem::GetPossibleTargetEntities() const
 {
 	return PossibleTargetEntities;

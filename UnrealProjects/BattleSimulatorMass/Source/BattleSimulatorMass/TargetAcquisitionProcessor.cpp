@@ -12,6 +12,7 @@ UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 	: EntityQuery(*this)
 {
 	bAutoRegisterWithProcessingPhases = true;
+	ProcessingPhase = EMassProcessingPhase::FrameEnd;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
 }
 
@@ -53,6 +54,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 
 					for (FMassEntityHandle& Handle : EntitiesArrays[ArrayIndex])
 					{
+						if (!EntityManager.IsEntityValid(Handle)) continue;
 						auto HandleTransform = EntityManager.GetFragmentDataStruct(Handle, FTransformFragment::StaticStruct()).Get<FTransformFragment>();
 						float DistanceSqr = FVector::DistSquared(TransformList[EntityIndex].GetTransform().GetLocation(), HandleTransform.GetTransform().GetLocation());
 						if (DistanceSqr < ClosestDistanceSqr)
