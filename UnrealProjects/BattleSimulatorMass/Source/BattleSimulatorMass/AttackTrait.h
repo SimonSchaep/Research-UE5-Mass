@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MassEntityTraitBase.h"
+#include "UnitFragments.h"
 #include "AttackTrait.generated.h"
 
 /**
@@ -18,12 +19,6 @@ protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-	float Range = 200;
-
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-	float AttackDelay = 1.f;
-
-	UPROPERTY(EditAnywhere, Category = "Mass|Attack")
-	float Damage = 20;
+	UPROPERTY(Category = "Attack", EditAnywhere)
+		FUnitAttackParameters AttackParameters;
 };

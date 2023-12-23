@@ -8,6 +8,6 @@
 
 void UHealthTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	FHealthFragment& HealthTemplate = BuildContext.AddFragment_GetRef<FHealthFragment>();
+	FUnitHealthFragment& HealthTemplate = BuildContext.AddFragment_GetRef<FUnitHealthFragment>();
 	HealthTemplate.CurrentHealth = Health;
 }

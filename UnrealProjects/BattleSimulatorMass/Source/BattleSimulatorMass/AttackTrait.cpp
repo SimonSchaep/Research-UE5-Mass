@@ -8,9 +8,11 @@
 
 void UAttackTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	FAttackFragment& AttackTemplate = BuildContext.AddFragment_GetRef<FAttackFragment>();
-	AttackTemplate.AttackDelay = AttackDelay;
-	AttackTemplate.AttackDelayTimer = AttackDelay;
-	AttackTemplate.Damage = Damage;
-	AttackTemplate.RangeSqr = Range * Range;
+	FMassEntityManager& EntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
+
+	const FConstSharedStruct AttackParamsFragment = EntityManager.GetOrCreateConstSharedFragment(AttackParameters);
+	BuildContext.AddConstSharedFragment(AttackParamsFragment);
+
+	FUnitAttackFragment& AttackTemplate = BuildContext.AddFragment_GetRef<FUnitAttackFragment>();
+	AttackTemplate.AttackDelayTimer = AttackParameters.AttackDelay;
 }

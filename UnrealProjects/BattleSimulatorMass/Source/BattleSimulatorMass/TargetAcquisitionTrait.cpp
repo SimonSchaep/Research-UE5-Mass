@@ -7,5 +7,5 @@
 
 void UTargetAcquisitionTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	BuildContext.AddFragment_GetRef<FTargetAcquisitionFragment>();
+	BuildContext.AddFragment_GetRef<FUnitTargetAcquisitionFragment>();
 }

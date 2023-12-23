@@ -19,7 +19,8 @@ public class BattleSimulatorMass : ModuleRules
 			"MassSpawner",
             "MassGameplayTestSuite",
             "MassCommon", 
-			"MassCrowd", 
+			"MassCrowd",
+            "MassLOD", 
 			"MassNavigation", 
 			"MassMovement", 
 			"MassGameplayDebug" });

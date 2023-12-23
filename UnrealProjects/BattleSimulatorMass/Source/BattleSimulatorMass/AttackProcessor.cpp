@@ -23,16 +23,18 @@ void UAttackProcessor::Initialize(UObject& Owner)
 
 void UAttackProcessor::ConfigureQueries()
 {
-	EntityQuery.AddRequirement<FAttackFragment>(EMassFragmentAccess::ReadWrite);
-	EntityQuery.AddRequirement<FTargetAcquisitionFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FUnitAttackFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddConstSharedRequirement<FUnitAttackParameters>(EMassFragmentPresence::All);
 }
 
 void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
-			const TArrayView<FAttackFragment> AttackList = Context.GetMutableFragmentView<FAttackFragment>();
-			const TArrayView<FTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FTargetAcquisitionFragment>();
+			const TArrayView<FUnitAttackFragment> AttackList = Context.GetMutableFragmentView<FUnitAttackFragment>();
+			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
+			const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
 			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
 
 			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
@@ -42,16 +44,16 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
 				}
 
-				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= AttackList[EntityIndex].RangeSqr && AttackList[EntityIndex].AttackDelayTimer <= 0)
+				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range) && AttackList[EntityIndex].AttackDelayTimer <= 0)
 				{
-					AttackList[EntityIndex].AttackDelayTimer += AttackList[EntityIndex].AttackDelay;
+					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
 					FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
 					if (!TargetEntity.IsValid()) continue;
-					auto DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FHealthFragment::StaticStruct());
+					auto DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
 					if (!DataStruct.IsValid()) continue;
-					FHealthFragment& TargetEntityHealth = DataStruct.Get<FHealthFragment>();
-					TargetEntityHealth.CurrentHealth -= AttackList[EntityIndex].Damage;
+					FUnitHealthFragment& TargetEntityHealth = DataStruct.Get<FUnitHealthFragment>();
+					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
 						TargetAcquisitionSubsystem->RemovePossibleTargetEntity(TargetEntity);

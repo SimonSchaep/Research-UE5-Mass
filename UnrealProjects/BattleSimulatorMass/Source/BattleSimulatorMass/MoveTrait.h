@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MassEntityTraitBase.h"
+#include "UnitFragments.h"
 #include "MoveTrait.generated.h"
 
 /**
@@ -16,4 +17,8 @@ class BATTLESIMULATORMASS_API UMoveTrait : public UMassEntityTraitBase
 	
 protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
+
+private:
+	UPROPERTY(Category = "Movement", EditAnywhere)
+		FUnitMoveParameters MoveParameters;
 };

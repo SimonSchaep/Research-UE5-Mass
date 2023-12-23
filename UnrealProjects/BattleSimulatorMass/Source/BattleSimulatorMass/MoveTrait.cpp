@@ -3,9 +3,13 @@
 
 #include "MoveTrait.h"
 #include "MassNavigationFragments.h"
+#include "UnitFragments.h"
 #include "MassEntityTemplateRegistry.h"
 
 void UMoveTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	BuildContext.AddFragment<FMassMoveTargetFragment>();
+	FMassEntityManager& EntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
+
+	const FConstSharedStruct MoveParamsFragment = EntityManager.GetOrCreateConstSharedFragment(MoveParameters);
+	BuildContext.AddConstSharedFragment(MoveParamsFragment);
 }

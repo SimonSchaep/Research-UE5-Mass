@@ -14,37 +14,55 @@ struct BATTLESIMULATORMASS_API FArmyIdFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	int ArmyId;
+	int ArmyId = 0;
 };
 
 USTRUCT()
-struct BATTLESIMULATORMASS_API FHealthFragment : public FMassFragment
+struct BATTLESIMULATORMASS_API FUnitHealthFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	float CurrentHealth;
+	float CurrentHealth = 100.f;
 };
 
 USTRUCT()
-struct BATTLESIMULATORMASS_API FAttackFragment : public FMassFragment
+struct BATTLESIMULATORMASS_API FUnitAttackFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
 	float AttackDelayTimer = 0.f;
-
-	float RangeSqr;
-
-	float AttackDelay;
-
-	float Damage;
 };
 
 USTRUCT()
-struct BATTLESIMULATORMASS_API FTargetAcquisitionFragment : public FMassFragment
+struct BATTLESIMULATORMASS_API FUnitTargetAcquisitionFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
 	FMassEntityHandle CurrentTarget;
 
-	float ClosestTargetDistanceSqr = FLT_MAX;
+	float ClosestTargetDistanceSqr;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitAttackParameters : public FMassSharedFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		float Range = 200.f;
+
+	UPROPERTY(EditAnywhere)
+		float AttackDelay = 1.f;
+
+	UPROPERTY(EditAnywhere)
+		float Damage = 20.f;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitMoveParameters : public FMassSharedFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		float StopDistance = 100.f;
 };
