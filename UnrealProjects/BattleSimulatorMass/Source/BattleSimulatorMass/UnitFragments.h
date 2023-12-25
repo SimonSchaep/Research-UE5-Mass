@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MassEntityTypes.h"
+#include "UnitAnimState.h"
 #include "UnitFragments.generated.h"
 
 /**
@@ -41,6 +42,14 @@ struct BATTLESIMULATORMASS_API FUnitTargetAcquisitionFragment : public FMassFrag
 	FMassEntityHandle CurrentTarget;
 
 	float ClosestTargetDistanceSqr;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitAnimStateFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	EUnitAnimState UnitAnimState;
 };
 
 USTRUCT()

@@ -26,6 +26,7 @@ void UMovementProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FUnitAnimStateFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassVelocityFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
@@ -39,6 +40,7 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
 			const TArrayView<FAgentRadiusFragment> RadiusList = Context.GetMutableFragmentView<FAgentRadiusFragment>();
 			const TArrayView<FMassVelocityFragment> VelocityList = Context.GetMutableFragmentView<FMassVelocityFragment>();
+			const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();
 			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
 			const TArrayView<FMassMoveTargetFragment> NavTargetList = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
 			const FMassMovementParameters& MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
@@ -53,6 +55,9 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 					MoveTarget.Center = Transform.GetLocation();
 					MoveTarget.DistanceToGoal = 0;
 					VelocityList[EntityIndex].Value = FVector::Zero();
+
+					//Set anim state
+					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
 					continue;
 				}
 
@@ -60,13 +65,16 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 				if (!EntityManager.IsEntityValid(TargetEntity)) continue;
 				auto DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FTransformFragment::StaticStruct());
 				if (!DataStruct.IsValid()) continue;
-				const FTransformFragment& TargetEntityTransform = DataStruct.Get<FTransformFragment>();				
+				const FTransformFragment& TargetEntityTransform = DataStruct.Get<FTransformFragment>();
 
 				//Set new target location
 				MoveTarget.Center = TargetEntityTransform.GetTransform().GetLocation();
 				MoveTarget.DistanceToGoal = TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr;
 				MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
 				MoveTarget.DesiredSpeed = FMassInt16Real(MovementParams.DefaultDesiredSpeed);
+
+				//Set anim state
+				AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Moving;
 			}
 		}));
 }
