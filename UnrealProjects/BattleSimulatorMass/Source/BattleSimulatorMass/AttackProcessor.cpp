@@ -28,6 +28,7 @@ void UAttackProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddConstSharedRequirement<FUnitAttackParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddConstSharedRequirement<FUnitAnimParameters>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 }
 
 void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -63,14 +64,20 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 
 					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
 					if (!TargetEntity.IsValid()) continue;
-					auto DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
-					if (!DataStruct.IsValid()) continue;
-					FUnitHealthFragment& TargetEntityHealth = DataStruct.Get<FUnitHealthFragment>();
+					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
+					if (!HealthDataStruct.IsValid()) continue;
+					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
 					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
 						TargetAcquisitionSubsystem->RemovePossibleTargetEntity(TargetEntity);
-						Context.Defer().DestroyEntity(TargetEntity);
+						EntityManager.AddTagToEntity(TargetEntity, FDeadTag::StaticStruct());
+
+						auto AnimDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitAnimStateFragment::StaticStruct());
+						if (!AnimDataStruct.IsValid()) continue;
+						FUnitAnimStateFragment& TargetEntityAnimState = AnimDataStruct.Get<FUnitAnimStateFragment>();
+						TargetEntityAnimState.UnitAnimState = EUnitAnimState::Dead;
+						//Context.Defer().DestroyEntity(TargetEntity);
 					}
 
 					//We are done attacking, so set anim state to idle

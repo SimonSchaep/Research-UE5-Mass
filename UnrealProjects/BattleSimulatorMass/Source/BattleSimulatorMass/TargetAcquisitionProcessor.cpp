@@ -6,6 +6,7 @@
 #include "MassCommonFragments.h"
 #include "MassExecutionContext.h"
 #include "UnitFragments.h"
+#include "UnitTags.h"
 #include "TargetAcquisitionSubsystem.h"
 
 UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
@@ -28,6 +29,7 @@ void UTargetAcquisitionProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FArmyIdFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 }
 
 void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

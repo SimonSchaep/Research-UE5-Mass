@@ -8,6 +8,7 @@
 #include "MassExecutionContext.h"
 #include "MassMovementFragments.h"
 #include "UnitFragments.h"
+#include "UnitTags.h"
 #include "MassSimulationLOD.h"
 
 UMovementProcessor::UMovementProcessor()
@@ -27,6 +28,7 @@ void UMovementProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FMassVelocityFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddConstSharedRequirement<FUnitMoveParameters>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 }
 
 void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
