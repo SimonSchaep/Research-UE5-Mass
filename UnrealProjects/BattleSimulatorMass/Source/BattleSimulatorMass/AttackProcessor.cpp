@@ -53,7 +53,10 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 
 						if (AttackList[EntityIndex].AttackDelayTimer <= AnimParams.AnimationAttackDelay)
 						{
-							AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+							if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
+							{
+								AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+							}
 						}
 
 						if (AttackList[EntityIndex].AttackDelayTimer > 0) continue;
@@ -71,7 +74,7 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
 						TargetAcquisitionSubsystem->RemovePossibleTargetEntity(TargetEntity);
-						EntityManager.AddTagToEntity(TargetEntity, FDeadTag::StaticStruct());
+						EntityManager.Defer().AddTag<FDeadTag>(TargetEntity);
 
 						auto AnimDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitAnimStateFragment::StaticStruct());
 						if (!AnimDataStruct.IsValid()) continue;
@@ -80,8 +83,11 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 						//Context.Defer().DestroyEntity(TargetEntity);
 					}
 
-					//We are done attacking, so set anim state to idle
-					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+					//We are done attacking, so set anim state to idle (if we didn't die this frame
+					if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
+					{
+						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+					}
 				}
 				else
 				{
