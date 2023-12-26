@@ -14,3 +14,9 @@ struct BATTLESIMULATORMASS_API FDeadTag : public FMassTag
 {
 	GENERATED_BODY()
 };
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FSyncRotationTag : public FMassTag
+{
+	GENERATED_BODY()
+};

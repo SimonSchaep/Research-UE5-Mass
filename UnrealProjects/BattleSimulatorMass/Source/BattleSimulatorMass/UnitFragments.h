@@ -6,11 +6,12 @@
 #include "MassEntityTypes.h"
 #include "UnitAnimState.h"
 #include "MassRepresentationTypes.h"
+#include "MassCommonFragments.h"
 #include "UnitFragments.generated.h"
 
-/**
- * 
- */
+
+//Fragments
+
 USTRUCT()
 struct BATTLESIMULATORMASS_API FArmyIdFragment : public FMassFragment
 {
@@ -52,6 +53,9 @@ struct BATTLESIMULATORMASS_API FUnitAnimStateFragment : public FMassFragment
 
 	EUnitAnimState UnitAnimState;
 };
+
+
+//Shared Fragments
 
 USTRUCT()
 struct BATTLESIMULATORMASS_API FUnitAnimParameters : public FMassSharedFragment
