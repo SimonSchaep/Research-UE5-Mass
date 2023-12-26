@@ -8,10 +8,23 @@ UTargetAcquisitionSubsystem::UTargetAcquisitionSubsystem()
 {
 }
 
+TStatId UTargetAcquisitionSubsystem::GetStatId() const
+{
+	return TStatId();
+}
+
 void UTargetAcquisitionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	Collection.InitializeDependency<UMassSimulationSubsystem>();
+}
+
+void UTargetAcquisitionSubsystem::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit count: %i"), GetUnitCount()));
 }
 
 void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId)
@@ -26,7 +39,7 @@ void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandl
 
 void UTargetAcquisitionSubsystem::RemovePossibleTargetEntity(const FMassEntityHandle& Handle)
 {
-	for (auto Array : PossibleTargetEntities)
+	for (auto& Array : PossibleTargetEntities)
 	{
 		Array.Remove(Handle);
 	}
@@ -35,4 +48,14 @@ void UTargetAcquisitionSubsystem::RemovePossibleTargetEntity(const FMassEntityHa
 const TArray<TArray<FMassEntityHandle>>& UTargetAcquisitionSubsystem::GetPossibleTargetEntities() const
 {
 	return PossibleTargetEntities;
+}
+
+int UTargetAcquisitionSubsystem::GetUnitCount() const
+{
+	int Sum{};
+	for (auto& Array : PossibleTargetEntities)
+	{
+		Sum += Array.Num();
+	}
+	return Sum;
 }

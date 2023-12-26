@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MassEntityTypes.h"
 #include "UnitAnimState.h"
+#include "MassRepresentationTypes.h"
 #include "UnitFragments.generated.h"
 
 /**
@@ -50,6 +51,30 @@ struct BATTLESIMULATORMASS_API FUnitAnimStateFragment : public FMassFragment
 	GENERATED_BODY()
 
 	EUnitAnimState UnitAnimState;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitAnimParameters : public FMassSharedFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		float AnimationAttackDelay;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitVisualizationParameters : public FMassSharedFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<AActor>> LowResTemplateActors;
+
+	UPROPERTY(EditAnywhere)
+		TArray<TSubclassOf<AActor>> HighResTemplateActors;
+
+	UPROPERTY(EditAnywhere)
+		TArray<FStaticMeshInstanceVisualizationDesc> StaticMeshInstanceDescs;
 };
 
 USTRUCT()

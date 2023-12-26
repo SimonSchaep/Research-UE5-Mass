@@ -15,10 +15,6 @@ UMovementProcessor::UMovementProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-	//ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::Movement;
-	//ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
-	//ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Movement);
-	//ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Behavior);
 }
 
 void UMovementProcessor::ConfigureQueries()
@@ -26,7 +22,7 @@ void UMovementProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadOnly);
-	EntityQuery.AddRequirement<FUnitAnimStateFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FUnitAnimStateFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassVelocityFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
@@ -37,11 +33,11 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 {
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
-			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
-			const TArrayView<FAgentRadiusFragment> RadiusList = Context.GetMutableFragmentView<FAgentRadiusFragment>();
+			const TConstArrayView<FTransformFragment> TransformList = Context.GetFragmentView<FTransformFragment>();
+			const TConstArrayView<FAgentRadiusFragment> RadiusList = Context.GetFragmentView<FAgentRadiusFragment>();
+			const TConstArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetFragmentView<FUnitTargetAcquisitionFragment>();
 			const TArrayView<FMassVelocityFragment> VelocityList = Context.GetMutableFragmentView<FMassVelocityFragment>();
 			const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();
-			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
 			const TArrayView<FMassMoveTargetFragment> NavTargetList = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
 			const FMassMovementParameters& MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
 			const FUnitMoveParameters& UnitMoveParams = Context.GetConstSharedFragment<FUnitMoveParameters>();
@@ -57,11 +53,14 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 					VelocityList[EntityIndex].Value = FVector::Zero();
 
 					//Set anim state
-					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Moving)
+					{
+						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+					}
 					continue;
 				}
 
-				FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;				
+				const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;				
 				if (!EntityManager.IsEntityValid(TargetEntity)) continue;
 				auto DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FTransformFragment::StaticStruct());
 				if (!DataStruct.IsValid()) continue;
