@@ -29,6 +29,7 @@ void UAttackProcessor::ConfigureQueries()
 	EntityQuery.AddConstSharedRequirement<FUnitAttackParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddConstSharedRequirement<FUnitAnimParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
+	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 }
 
 void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -65,25 +66,29 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					//Attack
 					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
+					//Get health fragment
 					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
 					if (!TargetEntity.IsValid()) continue;
 					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
 					if (!HealthDataStruct.IsValid()) continue;
 					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
+
+					//Do damage
 					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
+
+					//Check if dead
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
 						TargetAcquisitionSubsystem->RemovePossibleTargetEntity(TargetEntity);
-						EntityManager.Defer().AddTag<FDeadTag>(TargetEntity);
+						EntityManager.Defer().AddTag<FDyingTag>(TargetEntity);
 
 						auto AnimDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitAnimStateFragment::StaticStruct());
 						if (!AnimDataStruct.IsValid()) continue;
 						FUnitAnimStateFragment& TargetEntityAnimState = AnimDataStruct.Get<FUnitAnimStateFragment>();
 						TargetEntityAnimState.UnitAnimState = EUnitAnimState::Dead;
-						//Context.Defer().DestroyEntity(TargetEntity);
 					}
 
-					//We are done attacking, so set anim state to idle (if we didn't die this frame
+					//We are done attacking, so set anim state to idle (if we didn't die this frame)
 					if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
 					{
 						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;

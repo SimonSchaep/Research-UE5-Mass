@@ -7,6 +7,8 @@
 #include "UnitAnimState.h"
 #include "MassRepresentationTypes.h"
 #include "MassCommonFragments.h"
+#include "MassCommonTypes.h"
+#include "MassSpawnerTypes.h"
 #include "UnitFragments.generated.h"
 
 
@@ -54,8 +56,28 @@ struct BATTLESIMULATORMASS_API FUnitAnimStateFragment : public FMassFragment
 	EUnitAnimState UnitAnimState;
 };
 
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitDeathFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	float DeathDelayTimer = 0.f;
+};
+
 
 //Shared Fragments
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitDeathParameters : public FMassSharedFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		UMassEntityConfigAsset* DeadEntityConfig;
+
+	UPROPERTY(EditAnywhere)
+		float AnimationDeathDelay;
+};
 
 USTRUCT()
 struct BATTLESIMULATORMASS_API FUnitAnimParameters : public FMassSharedFragment

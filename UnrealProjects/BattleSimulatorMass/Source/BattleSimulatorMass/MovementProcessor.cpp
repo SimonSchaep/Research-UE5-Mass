@@ -29,6 +29,7 @@ void UMovementProcessor::ConfigureQueries()
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddConstSharedRequirement<FUnitMoveParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
+	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 }
 
 void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

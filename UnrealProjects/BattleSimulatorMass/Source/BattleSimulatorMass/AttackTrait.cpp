@@ -2,7 +2,6 @@
 
 
 #include "AttackTrait.h"
-#include "UnitFragments.h"
 #include "MassEntityTemplateRegistry.h"
 #include "MassEntityTemplate.h"
 

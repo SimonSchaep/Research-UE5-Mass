@@ -30,6 +30,7 @@ void UTargetAcquisitionProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
+	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 }
 
 void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

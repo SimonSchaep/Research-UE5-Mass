@@ -18,7 +18,6 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EUnitAnimState UnitAnimState;
 

@@ -111,23 +111,23 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = VisualizationParams.StaticMeshInstanceDescs[FMath::Min(UnitArmyId, VisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
 
 				const int32 NumEntities = Context.GetNumEntities();
-				for (int32 i{}; i < NumEntities; ++i)
+				for (int32 EntityIndex{}; EntityIndex < NumEntities; ++EntityIndex)
 				{
 					//Spawn Transform
 					const int32 AuxIndex = FMath::RandRange(0, Transforms.Num() - 1);
-					LocationList[i].GetMutableTransform() = Transforms[AuxIndex];
+					LocationList[EntityIndex].GetMutableTransform() = Transforms[AuxIndex];
 					Transforms.RemoveAtSwap(AuxIndex, 1, /*bAllowShrinking=*/false);
 
 					//Representation
-					RepresentationList[i].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
-					RepresentationList[i].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
-					RepresentationList[i].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
+					RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
+					RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
+					RepresentationList[EntityIndex].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
 
 					//Army Id
-					ArmyIdList[i].ArmyId = UnitArmyId;
+					ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
 
 					//Add to subsystem
-					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(i), UnitArmyId);
+					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
 				}
 			});
 	}
@@ -171,18 +171,18 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 
 				//Loop over entities
 				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-				for (int32 i{}; i < Context.GetNumEntities(); ++i)
+				for (int32 EntityIndex{}; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 				{
 					//Representation
-					RepresentationList[i].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
-					RepresentationList[i].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
-					RepresentationList[i].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
+					RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
+					RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
+					RepresentationList[EntityIndex].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
 
 					//Army Id
-					ArmyIdList[i].ArmyId = UnitArmyId;
+					ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
 
 					//Add to subsystem
-					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(i), UnitArmyId);
+					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
 				}
 			});
 	}
