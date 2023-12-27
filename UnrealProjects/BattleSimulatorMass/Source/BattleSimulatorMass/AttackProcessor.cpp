@@ -73,7 +73,9 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 						if (AttackList[EntityIndex].AttackDelayTimer > 0) continue;
 					}
 
+
 					//Attack
+
 					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
 					//Get health fragment
@@ -108,6 +110,11 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 				{
 					//Reset attack delay timer
 					AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
+
+					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
+					{
+						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+					}
 				}
 			}
 		}));

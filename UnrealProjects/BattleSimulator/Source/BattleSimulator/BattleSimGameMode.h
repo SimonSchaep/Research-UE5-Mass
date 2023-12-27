@@ -20,13 +20,33 @@ public:
 
 	virtual void StartPlay()override;
 
+	class UUnitManager* GetUnitManager()const;
+
 	UFUNCTION(BlueprintCallable)
-	void StartSpawning();
+		void StartSpawning();
+
+	UFUNCTION(BlueprintCallable)
+		void StartSimulation();
 
 	UFUNCTION(BlueprintCallable)
 	void Restart();
 
-	class UUnitManager* GetUnitManager()const;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartSimulation);
+	UPROPERTY(BlueprintAssignable)
+		FOnStartSimulation OnStartSimulation;
+
+	UFUNCTION(BlueprintCallable)
+		bool HasSpawned()const;
+
+	UFUNCTION(BlueprintCallable)
+		bool HasStartedSimulation()const;
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+		bool bHasSpawned = false;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bHasStartedSimulation = false;
 
 private:
 	UPROPERTY(EditAnywhere)

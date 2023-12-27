@@ -16,16 +16,37 @@ void ABattleSimGameMode::StartPlay()
 	Super::StartPlay();
 }
 
-
-
 void ABattleSimGameMode::StartSpawning()
 {
+	if (bHasSpawned) return;
+
+	bHasSpawned = true;
+
 	UnitManager->SpawnUnits();
+}
+
+void ABattleSimGameMode::StartSimulation()
+{
+	if (bHasStartedSimulation) return;
+
+	bHasStartedSimulation = true;
+
+	OnStartSimulation.Broadcast();
 }
 
 void ABattleSimGameMode::Restart()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
+bool ABattleSimGameMode::HasSpawned() const
+{
+	return bHasSpawned;
+}
+
+bool ABattleSimGameMode::HasStartedSimulation() const
+{
+	return bHasStartedSimulation;
 }
 
 UUnitManager* ABattleSimGameMode::GetUnitManager() const

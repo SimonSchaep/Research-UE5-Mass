@@ -33,25 +33,38 @@ void UAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (AttackDelayTimer > 0)
+	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() <= RangeSqr)
 	{
-		AttackDelayTimer -= DeltaTime;
-	}
+		if (AttackDelayTimer > 0)
+		{
+			AttackDelayTimer -= DeltaTime;
 
-	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() <= RangeSqr && AttackDelayTimer <= 0)
-	{
+			if (AttackDelayTimer <= AnimationAttackDelay)
+			{
+				bIsAttacking = true;
+			}
+
+			if (AttackDelayTimer > 0) return;
+		}
+
 		AttackTarget();
 		AttackDelayTimer += AttackDelay;
+		bIsAttacking = false;
+	}
+	else
+	{
+		AttackDelayTimer = AnimationAttackDelay;
+		bIsAttacking = false;
 	}
 }
 
-void UAttackComponent::DamageTarget()
+bool UAttackComponent::IsAttacking() const
 {
-	TargetAcquisitionComponent->GetClosestTarget()->GetComponentByClass<UHealthComponent>()->DoDamage(Damage);
+	return bIsAttacking;
 }
 
 void UAttackComponent::AttackTarget()
 {	
-	OnAttack.Broadcast();
+	TargetAcquisitionComponent->GetClosestTarget()->GetComponentByClass<UHealthComponent>()->DoDamage(Damage);
 }
 

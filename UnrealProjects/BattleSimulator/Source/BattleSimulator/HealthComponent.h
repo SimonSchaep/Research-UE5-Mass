@@ -19,13 +19,6 @@ public:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTakeDamage);
-	UPROPERTY(BlueprintAssignable)
-		FOnTakeDamage OnTakeDamage;
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 	UPROPERTY(BlueprintAssignable)
 		FOnDeath OnDeath;

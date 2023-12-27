@@ -35,7 +35,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTarget() == nullptr)
 	{
-		bIsRunning = false;
+		bIsMoving = false;
 		return;
 	}
 
@@ -43,19 +43,19 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
-		AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), StopRange);
-		bIsRunning = true;
+		AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), 0);
+		bIsMoving = true;
 	}
 	else
 	{
 		AIController->StopMovement();
 		FRotator Rotation = FRotator(0, Direction.ToOrientationRotator().Yaw, 0);
 		GetOwner()->SetActorRotation(Rotation);
-		bIsRunning = false;
+		bIsMoving = false;
 	}
 }
 
-bool UMoveComponent::GetIsRunning() const
+bool UMoveComponent::IsMoving() const
 {
-	return bIsRunning;
+	return bIsMoving;
 }

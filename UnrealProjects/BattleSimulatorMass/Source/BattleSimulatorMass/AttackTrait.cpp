@@ -12,6 +12,5 @@ void UAttackTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, 
 	const FConstSharedStruct AttackParamsFragment = EntityManager.GetOrCreateConstSharedFragment(AttackParameters);
 	BuildContext.AddConstSharedFragment(AttackParamsFragment);
 
-	FUnitAttackFragment& AttackTemplate = BuildContext.AddFragment_GetRef<FUnitAttackFragment>();
-	AttackTemplate.AttackDelayTimer = AttackParameters.AttackDelay;
+	BuildContext.AddFragment<FUnitAttackFragment>();
 }

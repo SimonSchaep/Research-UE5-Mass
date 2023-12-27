@@ -23,7 +23,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-		bool GetIsRunning()const;
+		bool IsMoving()const;
 
 private:
 	class UTargetAcquisitionComponent* TargetAcquisitionComponent;
@@ -32,7 +32,7 @@ private:
 
 	float StopRangeSqr;
 
-	bool bIsRunning = false;
+	bool bIsMoving = false;
 
 	UPROPERTY(EditAnywhere)
 		float StopRange = 150.f;

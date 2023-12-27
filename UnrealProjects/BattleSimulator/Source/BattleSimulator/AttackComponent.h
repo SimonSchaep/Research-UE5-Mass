@@ -22,16 +22,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//Should be called from the animation
-	UFUNCTION(BlueprintCallable)
-		void DamageTarget();
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttack);
-	UPROPERTY(BlueprintAssignable)
-		FOnAttack OnAttack;
+	bool IsAttacking()const;
 
 private:
 	void AttackTarget();
+
+	bool bIsAttacking = false;
 
 	class UTargetAcquisitionComponent* TargetAcquisitionComponent;
 
@@ -41,6 +37,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		float AttackDelay = 1.f;
+
+	UPROPERTY(EditAnywhere)
+		float AnimationAttackDelay = .4f;
 
 	UPROPERTY(EditAnywhere)
 		float Range = 200;
