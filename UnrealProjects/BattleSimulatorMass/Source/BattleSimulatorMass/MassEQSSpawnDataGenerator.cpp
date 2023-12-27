@@ -80,7 +80,7 @@ void UMassEQSSpawnDataGenerator::OnEQSQueryFinished(TSharedPtr<FEnvQueryResult> 
 			LocationIndex++;
 		}
 
-		//ArmyId
+		//SpawnVars
 		SpawnData.SpawnVars = SpawnVars;
 	}
 

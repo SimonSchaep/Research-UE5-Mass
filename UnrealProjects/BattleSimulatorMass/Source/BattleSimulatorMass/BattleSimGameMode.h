@@ -23,8 +23,25 @@ public:
 		void StartSpawning();
 
 	UFUNCTION(BlueprintCallable)
+		void StartSimulation();
+
+	UFUNCTION(BlueprintCallable)
 		void Restart();
+
+	UFUNCTION(BlueprintCallable)
+		bool HasSpawned()const;
+
+	UFUNCTION(BlueprintCallable)
+		bool HasStartedSimulation()const;
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+		bool bHasSpawned = false;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bHasStartedSimulation = false;
 
 private:
 	class TArray<class AMassSpawner*> ArmySpawners;
+
 };

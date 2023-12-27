@@ -10,12 +10,25 @@
 #include "UnitFragments.h"
 #include "UnitTags.h"
 #include "MassSimulationLOD.h"
+#include "Kismet/GameplayStatics.h"
+#include "BattleSimGameMode.h"
 
 UMovementProcessor::UMovementProcessor()
 	:EntityQuery(*this)
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
+}
+
+void UMovementProcessor::Initialize(UObject& Owner)
+{
+	Super::Initialize(Owner);
+
+	GameMode = Cast<ABattleSimGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMovementProcessor: GameMode not found."));
+	}
 }
 
 void UMovementProcessor::ConfigureQueries()
@@ -34,6 +47,8 @@ void UMovementProcessor::ConfigureQueries()
 
 void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
+	if (!GameMode->HasStartedSimulation()) return;
+
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
 			const TConstArrayView<FTransformFragment> TransformList = Context.GetFragmentView<FTransformFragment>();
@@ -49,6 +64,8 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 			{
 				const FTransform& Transform = TransformList[EntityIndex].GetTransform();
 				FMassMoveTargetFragment& MoveTarget = NavTargetList[EntityIndex];
+
+				//If in stop range -> stop moving
 				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(UnitMoveParams.StopDistance))
 				{
 					MoveTarget.Center = Transform.GetLocation();

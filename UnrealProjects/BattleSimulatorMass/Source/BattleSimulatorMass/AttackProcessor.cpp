@@ -6,6 +6,8 @@
 #include "UnitTags.h"
 #include "MassExecutionContext.h"
 #include "TargetAcquisitionSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+#include "BattleSimGameMode.h"
 
 UAttackProcessor::UAttackProcessor()
 	:EntityQuery(*this)
@@ -19,6 +21,12 @@ void UAttackProcessor::Initialize(UObject& Owner)
 	Super::Initialize(Owner);
 
 	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionSubsystem>(Owner.GetWorld());
+
+	GameMode = Cast<ABattleSimGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UMovementProcessor: GameMode not found."));
+	}
 }
 
 void UAttackProcessor::ConfigureQueries()
@@ -34,6 +42,8 @@ void UAttackProcessor::ConfigureQueries()
 
 void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
+	if (!GameMode->HasStartedSimulation()) return;
+
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
 			const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();

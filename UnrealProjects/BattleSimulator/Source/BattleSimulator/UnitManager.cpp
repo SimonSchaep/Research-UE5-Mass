@@ -30,7 +30,13 @@ void UUnitManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit count: %i"), GetUnitCount()));
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit Count:")), false);
+		for (int32 i{}; i < Units.Num(); ++i)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Army %i: %i"), i, Units[i].Num()), false);
+		}
+	}
 }
 
 TArray<AActor*>& UUnitManager::GetAllEnemyUnits(int TeamId)
@@ -76,10 +82,5 @@ void UUnitManager::SpawnUnit(const FTransform& SpawnTransform)
 {
 	AActor* SpawnedActor = GetWorld()->SpawnActor(UnitTemplate, &SpawnTransform);
 	Units[NextTeamId].Add(SpawnedActor);
-}
-
-int UUnitManager::GetUnitCount() const
-{
-	return Units[0].Num() + Units[1].Num();
 }
 

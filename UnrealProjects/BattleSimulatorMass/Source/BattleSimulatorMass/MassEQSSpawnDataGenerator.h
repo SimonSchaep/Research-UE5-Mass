@@ -17,6 +17,12 @@ struct FMassEntitySpawnVars
 	
 	UPROPERTY(EditAnyWhere)
 	int ArmyId = 0;
+
+	UPROPERTY(EditAnyWhere)
+	bool bShouldOverrideSpawnRotation = false;
+
+	UPROPERTY(EditAnyWhere)
+	FQuat SpawnRotationOverride{};
 };
 
 //Based on FMassTransformsSpawnData

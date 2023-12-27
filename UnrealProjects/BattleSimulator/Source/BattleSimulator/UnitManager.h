@@ -32,8 +32,6 @@ public:
 private:
 	void SpawnUnit(const FTransform& SpawnTransform);
 
-	int GetUnitCount()const;
-
 	TArray<TArray<AActor*>> Units;
 
 	UPROPERTY(EditAnywhere)

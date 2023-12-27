@@ -30,7 +30,5 @@ public:
 	const TArray<TArray<FMassEntityHandle>>& GetPossibleTargetEntities()const;
 
 private:
-	int GetUnitCount() const;
-
 	TArray<TArray<FMassEntityHandle>> PossibleTargetEntities;
 };

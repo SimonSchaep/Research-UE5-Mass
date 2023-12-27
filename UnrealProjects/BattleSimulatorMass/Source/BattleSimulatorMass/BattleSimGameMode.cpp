@@ -14,7 +14,10 @@ void ABattleSimGameMode::StartPlay()
 {
 	Super::StartPlay();
 
-	//Get all mass spawners, sadly we can't directly get them as AMassSpawner
+	bHasSpawned = false;
+	bHasStartedSimulation = false;
+
+	//Get all mass spawners
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMassSpawner::StaticClass(), FoundActors);
 	for (auto Actor : FoundActors)
@@ -25,13 +28,33 @@ void ABattleSimGameMode::StartPlay()
 
 void ABattleSimGameMode::StartSpawning()
 {
+	if (bHasSpawned) return;
+
+	bHasSpawned = true;
 	for (auto Spawner : ArmySpawners)
 	{
 		Spawner->DoSpawning();
 	}
 }
 
+void ABattleSimGameMode::StartSimulation()
+{
+	if (bHasStartedSimulation) return;
+
+	bHasStartedSimulation = true;
+}
+
 void ABattleSimGameMode::Restart()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
+bool ABattleSimGameMode::HasSpawned() const
+{
+	return bHasSpawned;
+}
+
+bool ABattleSimGameMode::HasStartedSimulation() const
+{
+	return bHasStartedSimulation;
 }

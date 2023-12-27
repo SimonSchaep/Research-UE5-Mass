@@ -12,6 +12,7 @@
 UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 	: EntityQuery(*this)
 {
+	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
 	ProcessingPhase = EMassProcessingPhase::FrameEnd;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);

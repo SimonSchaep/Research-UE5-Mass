@@ -51,7 +51,9 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 
 	FMassEntitySpawnData& AuxData = Context.GetMutableAuxData().GetMutable<FMassEntitySpawnData>();
 	TArray<FTransform>& Transforms = AuxData.Transforms;
-	int& UnitArmyId = AuxData.SpawnVars.ArmyId;
+	int UnitArmyId = AuxData.SpawnVars.ArmyId;
+	FQuat SpawnRotation = AuxData.SpawnVars.SpawnRotationOverride;
+	bool bShouldOverrideSpawnRotation = AuxData.SpawnVars.bShouldOverrideSpawnRotation;
 
 	const int32 NumSpawnTransforms = Transforms.Num();
 	if (NumSpawnTransforms == 0)
@@ -84,7 +86,7 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 	{
 		EntityQuery.ForEachEntityChunk(EntityManager, Context, [&](FMassExecutionContext& Context)
 			{
-				const TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
+				const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
 				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
 				const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
 				const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
@@ -115,7 +117,11 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				{
 					//Spawn Transform
 					const int32 AuxIndex = FMath::RandRange(0, Transforms.Num() - 1);
-					LocationList[EntityIndex].GetMutableTransform() = Transforms[AuxIndex];
+					TransformList[EntityIndex].GetMutableTransform() = Transforms[AuxIndex];
+					if (bShouldOverrideSpawnRotation)
+					{
+						TransformList[EntityIndex].GetMutableTransform().SetRotation(SpawnRotation);
+					}
 					Transforms.RemoveAtSwap(AuxIndex, 1, /*bAllowShrinking=*/false);
 
 					//Representation
@@ -134,21 +140,22 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 	else
 	{
 		int32 NextTransformIndex = 0;
-		EntityQuery.ForEachEntityChunk(EntityManager, Context, [&Transforms, &NextTransformIndex, &UnitArmyId, this](FMassExecutionContext& Context)
+		EntityQuery.ForEachEntityChunk(EntityManager, Context, [&](FMassExecutionContext& Context)
 			{
+				const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
+				const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
+				const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
+				UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
+
 				//Spawn Transform
 				const int32 NumEntities = Context.GetNumEntities();
 				TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
 				check(NextTransformIndex + NumEntities <= Transforms.Num());
 
 				FMemory::Memcpy(LocationList.GetData(), &Transforms[NextTransformIndex], NumEntities * LocationList.GetTypeSize());
-				NextTransformIndex += NumEntities;
+				NextTransformIndex += NumEntities;				
 
 				//Representation
-				const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
-				const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
-				UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
-
 				if (VisualizationParams.LowResTemplateActors.IsEmpty())
 				{
 					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No LowResTemplateActors configured. Entities won't be correctly initialized"));
@@ -173,6 +180,11 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
 				for (int32 EntityIndex{}; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 				{
+					if (bShouldOverrideSpawnRotation)
+					{
+						TransformList[EntityIndex].GetMutableTransform().SetRotation(SpawnRotation);
+					}
+
 					//Representation
 					RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
 					RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;

@@ -24,7 +24,13 @@ void UTargetAcquisitionSubsystem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit count: %i"), GetUnitCount()));
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit Count:")), false);
+		for (int32 i{}; i < PossibleTargetEntities.Num(); ++i)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Army %i: %i"), i, PossibleTargetEntities[i].Num()), false);
+		}		
+	}
 }
 
 void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId)
@@ -48,14 +54,4 @@ void UTargetAcquisitionSubsystem::RemovePossibleTargetEntity(const FMassEntityHa
 const TArray<TArray<FMassEntityHandle>>& UTargetAcquisitionSubsystem::GetPossibleTargetEntities() const
 {
 	return PossibleTargetEntities;
-}
-
-int UTargetAcquisitionSubsystem::GetUnitCount() const
-{
-	int Sum{};
-	for (auto& Array : PossibleTargetEntities)
-	{
-		Sum += Array.Num();
-	}
-	return Sum;
 }

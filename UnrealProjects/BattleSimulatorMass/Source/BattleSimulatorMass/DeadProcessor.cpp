@@ -19,7 +19,7 @@ UDeadProcessor::UDeadProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Representation);
+	ProcessingPhase = EMassProcessingPhase::PostPhysics;
 }
 
 void UDeadProcessor::Initialize(UObject& Owner)
@@ -65,32 +65,40 @@ void UDeadProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionCo
 					if (DeathList[EntityIndex].DeathDelayTimer > 0) continue;
 				}
 
-				//Spawn dead entity				
-				TArray<FMassEntityHandle> SpawnedEntities{};
-				const FMassEntityTemplate EntityTemplate = DeathParams.DeadEntityConfig->GetConfig().GetOrCreateEntityTemplate(*GetWorld());
-				SpawnerSubsystem->SpawnEntities(EntityTemplate, 1, SpawnedEntities);
+				FTransform Transform = TransformList[EntityIndex].GetTransform();
+				int ArmyId = ArmyIdList[EntityIndex].ArmyId;
 
-				//Set transform
-				auto DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FTransformFragment::StaticStruct());
-				FTransformFragment& SpawnedEntityTransform = DataStruct.GetMutable<FTransformFragment>();
-				SpawnedEntityTransform.SetTransform(TransformList[EntityIndex].GetTransform());
+				Context.Defer().PushCommand<FMassDeferredCreateCommand>(
+					[this, RepresentationSubsystem, DeathParams, Transform, ArmyId](FMassEntityManager& EntityManager)
+					{
+						//Spawn dead entity				
+						TArray<FMassEntityHandle> SpawnedEntities{};
+						const FMassEntityTemplate EntityTemplate = DeathParams.DeadEntityConfig->GetConfig().GetOrCreateEntityTemplate(*GetWorld());
+						SpawnerSubsystem->SpawnEntities(EntityTemplate, 1, SpawnedEntities);
 
-				//Set representation
-				auto view = FMassEntityView(EntityManager, SpawnedEntities[0]);
-				const FUnitVisualizationParameters& SpawnedEntityVisualizationParams = view.GetConstSharedFragmentData<FUnitVisualizationParameters>();
-				DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FMassRepresentationFragment::StaticStruct());
-				FMassRepresentationFragment& SpawnedEntityRepresentation = DataStruct.GetMutable<FMassRepresentationFragment>();
+						//Set transform
+						auto DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FTransformFragment::StaticStruct());
+						FTransformFragment& SpawnedEntityTransform = DataStruct.Get<FTransformFragment>();
+						SpawnedEntityTransform.SetTransform(Transform);
 
-				TSubclassOf<AActor> LowResTemplateActor = SpawnedEntityVisualizationParams.LowResTemplateActors[FMath::Min(ArmyIdList[EntityIndex].ArmyId, SpawnedEntityVisualizationParams.LowResTemplateActors.Num() - 1)];
-				TSubclassOf<AActor> HighResTemplateActor = SpawnedEntityVisualizationParams.HighResTemplateActors[FMath::Min(ArmyIdList[EntityIndex].ArmyId, SpawnedEntityVisualizationParams.HighResTemplateActors.Num() - 1)];
-				FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = SpawnedEntityVisualizationParams.StaticMeshInstanceDescs[FMath::Min(ArmyIdList[EntityIndex].ArmyId, SpawnedEntityVisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
+						//Set representation
+						auto view = FMassEntityView(EntityManager, SpawnedEntities[0]);
+						const FUnitVisualizationParameters& SpawnedEntityVisualizationParams = view.GetConstSharedFragmentData<FUnitVisualizationParameters>();
+						DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FMassRepresentationFragment::StaticStruct());
+						FMassRepresentationFragment& SpawnedEntityRepresentation = DataStruct.Get<FMassRepresentationFragment>();
 
-				SpawnedEntityRepresentation.StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
-				SpawnedEntityRepresentation.LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
-				SpawnedEntityRepresentation.HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
+						TSubclassOf<AActor> LowResTemplateActor = SpawnedEntityVisualizationParams.LowResTemplateActors[FMath::Min(ArmyId, SpawnedEntityVisualizationParams.LowResTemplateActors.Num() - 1)];
+						TSubclassOf<AActor> HighResTemplateActor = SpawnedEntityVisualizationParams.HighResTemplateActors[FMath::Min(ArmyId, SpawnedEntityVisualizationParams.HighResTemplateActors.Num() - 1)];
+						FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = SpawnedEntityVisualizationParams.StaticMeshInstanceDescs[FMath::Min(ArmyId, SpawnedEntityVisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
 
-				//Kill this entity
-				Context.Defer().DestroyEntity(Context.GetEntity(EntityIndex));
+						SpawnedEntityRepresentation.StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
+						SpawnedEntityRepresentation.LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
+						SpawnedEntityRepresentation.HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
+					});
+
+
+				//Mark for destroy
+				Context.Defer().AddTag<FDeadTag>(Context.GetEntity(EntityIndex));
 			}
 		}));
 }
