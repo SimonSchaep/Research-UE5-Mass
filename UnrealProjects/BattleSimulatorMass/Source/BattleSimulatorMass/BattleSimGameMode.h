@@ -43,5 +43,4 @@ protected:
 
 private:
 	class TArray<class AMassSpawner*> ArmySpawners;
-
 };

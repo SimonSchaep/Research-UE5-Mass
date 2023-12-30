@@ -25,5 +25,7 @@ protected:
 private:
 	FMassEntityQuery EntityQuery;
 
+	class ABattleSimGameMode* GameMode;
+
 	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
 };

@@ -17,7 +17,6 @@ class BATTLESIMULATORMASS_API UAttackProcessor : public UMassProcessor
 public:
 	UAttackProcessor();
 
-
 protected:
 	virtual void Initialize(UObject& Owner)override;
 	virtual void ConfigureQueries() override;
@@ -29,4 +28,6 @@ private:
 	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
 
 	class ABattleSimGameMode* GameMode;
+
+	FCriticalSection Mutex;
 };

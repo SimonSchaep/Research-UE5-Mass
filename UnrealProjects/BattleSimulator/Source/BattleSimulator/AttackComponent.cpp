@@ -53,7 +53,14 @@ void UAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 	else
 	{
-		AttackDelayTimer = AnimationAttackDelay;
+		if (AttackDelayTimer > AnimationAttackDelay)
+		{
+			AttackDelayTimer -= DeltaTime;
+		}
+		else
+		{
+			AttackDelayTimer = AnimationAttackDelay;
+		}
 		bIsAttacking = false;
 	}
 }

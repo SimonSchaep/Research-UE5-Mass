@@ -7,8 +7,10 @@ public class BattleSimulatorMass : ModuleRules
 	public BattleSimulatorMass(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StructUtils", "AIModule",
+		
+        PrivateDefinitions.Add("ENABLE_MULTITHREADING");
+
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StructUtils", "AIModule", "NavigationSystem",
 			"MassAIDebug", 
 			"MassEntity", 
 			"MassActors", 

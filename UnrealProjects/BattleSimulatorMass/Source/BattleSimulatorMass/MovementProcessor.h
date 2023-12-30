@@ -26,4 +26,6 @@ private:
 	FMassEntityQuery EntityQuery;
 
 	class ABattleSimGameMode* GameMode;
+
+	class UNavigationSystemV1* NavigationSystem;
 };

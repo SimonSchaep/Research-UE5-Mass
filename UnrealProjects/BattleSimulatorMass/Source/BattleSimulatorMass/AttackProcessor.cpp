@@ -3,6 +3,8 @@
 
 #include "AttackProcessor.h"
 #include "UnitFragments.h"
+#include "MassCommonFragments.h"
+#include "MassMovementFragments.h"
 #include "UnitTags.h"
 #include "MassExecutionContext.h"
 #include "TargetAcquisitionSubsystem.h"
@@ -42,6 +44,83 @@ void UAttackProcessor::ConfigureQueries()
 
 void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
+#ifdef ENABLE_MULTITHREADING
+	if (!GameMode->HasStartedSimulation()) return;
+
+	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
+		{
+			const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();
+			const TArrayView<FUnitAttackFragment> AttackList = Context.GetMutableFragmentView<FUnitAttackFragment>();
+			const TConstArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetFragmentView<FUnitTargetAcquisitionFragment>();
+			const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
+			const FUnitAnimParameters& AnimParams = Context.GetConstSharedFragment<FUnitAnimParameters>();
+			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
+
+			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)
+			{
+				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
+				{
+					//Timer
+					if (AttackList[EntityIndex].AttackDelayTimer > 0)
+					{
+						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+
+						if (AttackList[EntityIndex].AttackDelayTimer <= AnimParams.AnimationAttackDelay)
+						{
+							if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
+							{
+								AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+							}
+						}
+
+						if (AttackList[EntityIndex].AttackDelayTimer > 0) return;
+					}
+
+
+					// ATTACK
+
+					//Increase timer
+					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
+
+					//Get health fragment
+					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
+					if (!TargetEntity.IsValid()) return;
+					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
+					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
+
+					//Do damage
+					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
+
+					//Check if dead
+					if (TargetEntityHealth.CurrentHealth <= 0)
+					{
+						Mutex.Lock();
+						Context.Defer().AddTag<FDyingTag>(TargetEntity);
+						Mutex.Unlock();
+					}
+
+					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+				}
+				else
+				{
+					//Count down timer until anim delay
+					if (AttackList[EntityIndex].AttackDelayTimer > AnimParams.AnimationAttackDelay)
+					{
+						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+					}
+					else
+					{
+						AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
+					}
+
+					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
+					{
+						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+					}
+				}
+			});
+		}));
+#else
 	if (!GameMode->HasStartedSimulation()) return;
 
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
@@ -70,19 +149,19 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 							}
 						}
 
-						if (AttackList[EntityIndex].AttackDelayTimer > 0) continue;
+						if (AttackList[EntityIndex].AttackDelayTimer > 0) return;
 					}
 
 
-					//Attack
+					// ATTACK
 
+					//Increase timer
 					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
 					//Get health fragment
 					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
-					if (!TargetEntity.IsValid()) continue;
+					if (!TargetEntity.IsValid()) return;
 					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
-					if (!HealthDataStruct.IsValid()) continue;
 					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
 
 					//Do damage
@@ -91,25 +170,22 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					//Check if dead
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
-						TargetAcquisitionSubsystem->RemovePossibleTargetEntity(TargetEntity);
-						EntityManager.Defer().AddTag<FDyingTag>(TargetEntity);
-
-						auto AnimDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitAnimStateFragment::StaticStruct());
-						if (!AnimDataStruct.IsValid()) continue;
-						FUnitAnimStateFragment& TargetEntityAnimState = AnimDataStruct.Get<FUnitAnimStateFragment>();
-						TargetEntityAnimState.UnitAnimState = EUnitAnimState::Dead;
+						Context.Defer().AddTag<FDyingTag>(TargetEntity);
 					}
 
-					//We are done attacking, so set anim state to idle (if we didn't die this frame)
-					if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
-					{
-						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
-					}
+					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
 				}
 				else
 				{
-					//Reset attack delay timer
-					AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
+					//Count down timer until anim delay
+					if (AttackList[EntityIndex].AttackDelayTimer > AnimParams.AnimationAttackDelay)
+					{
+						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+					}
+					else
+					{
+						AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
+					}
 
 					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
 					{
@@ -118,4 +194,5 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 				}
 			}
 		}));
+#endif // ENABLE_MULTITHREADING	
 }

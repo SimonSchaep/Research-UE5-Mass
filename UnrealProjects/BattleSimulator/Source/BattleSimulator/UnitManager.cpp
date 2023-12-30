@@ -57,9 +57,10 @@ int UUnitManager::GetNextTeamId() const
 
 void UUnitManager::SpawnUnits()
 {
+	//Hardcoded 2 armies for now
 	FTransform SpawnTransform{};
 	NextTeamId = 0;
-	for (int i{}; i < SpawnCount / 2; ++i)
+	for (int i{}; i < SpawnCount; ++i)
 	{
 		SpawnTransform.SetLocation(FVector(
 			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
@@ -68,7 +69,7 @@ void UUnitManager::SpawnUnits()
 		SpawnUnit(SpawnTransform);
 	}
 	NextTeamId = 1;
-	for (int i{}; i < SpawnCount / 2; ++i)
+	for (int i{}; i < SpawnCount; ++i)
 	{
 		SpawnTransform.SetLocation(FVector(
 			FMath::RandRange(-SpawnPosRange, SpawnPosRange),

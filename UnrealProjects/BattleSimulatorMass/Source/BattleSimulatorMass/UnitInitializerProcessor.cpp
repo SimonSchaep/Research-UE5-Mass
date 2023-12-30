@@ -13,6 +13,7 @@
 #include "MassRepresentationFragments.h"
 #include "MassRepresentationSubsystem.h"
 
+//Based on UMassSpawnLocationProcessor
 
 UUnitInitializerProcessor::UUnitInitializerProcessor()
 	:EntityQuery(*this)
@@ -82,120 +83,56 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		}
 	}
 
-	if (AuxData.bRandomize)
-	{
-		EntityQuery.ForEachEntityChunk(EntityManager, Context, [&](FMassExecutionContext& Context)
+	EntityQuery.ForEachEntityChunk(EntityManager, Context, [&](FMassExecutionContext& Context)
+		{
+			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
+			const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
+			const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
+			const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
+			UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
+
+			if (VisualizationParams.LowResTemplateActors.IsEmpty())
 			{
-				const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
-				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-				const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
-				const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
-				UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
-
-				if (VisualizationParams.LowResTemplateActors.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No LowResTemplateActors configured. Entities won't be correctly initialized"));
-					return;
-				}
-				if (VisualizationParams.HighResTemplateActors.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No HighResTemplateActors configured. Entities won't be correctly initialized"));
-					return;
-				}
-				if (VisualizationParams.StaticMeshInstanceDescs.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No StaticMeshInstanceDescs configured. Entities won't be correctly initialized"));
-					return;
-				}
-
-				TSubclassOf<AActor> LowResTemplateActor = VisualizationParams.LowResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.LowResTemplateActors.Num() - 1)];
-				TSubclassOf<AActor> HighResTemplateActor = VisualizationParams.HighResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.HighResTemplateActors.Num() - 1)];
-				FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = VisualizationParams.StaticMeshInstanceDescs[FMath::Min(UnitArmyId, VisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
-
-				const int32 NumEntities = Context.GetNumEntities();
-				for (int32 EntityIndex{}; EntityIndex < NumEntities; ++EntityIndex)
-				{
-					//Spawn Transform
-					const int32 AuxIndex = FMath::RandRange(0, Transforms.Num() - 1);
-					TransformList[EntityIndex].GetMutableTransform() = Transforms[AuxIndex];
-					if (bShouldOverrideSpawnRotation)
-					{
-						TransformList[EntityIndex].GetMutableTransform().SetRotation(SpawnRotation);
-					}
-					Transforms.RemoveAtSwap(AuxIndex, 1, /*bAllowShrinking=*/false);
-
-					//Representation
-					RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
-					RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
-					RepresentationList[EntityIndex].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
-
-					//Army Id
-					ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
-
-					//Add to subsystem
-					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
-				}
-			});
-	}
-	else
-	{
-		int32 NextTransformIndex = 0;
-		EntityQuery.ForEachEntityChunk(EntityManager, Context, [&](FMassExecutionContext& Context)
+				UE_VLOG_UELOG(this, LogMass, Error, TEXT("No LowResTemplateActors configured. Entities won't be correctly initialized"));
+				return;
+			}
+			if (VisualizationParams.HighResTemplateActors.IsEmpty())
 			{
-				const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
-				const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
-				const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
-				UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
+				UE_VLOG_UELOG(this, LogMass, Error, TEXT("No HighResTemplateActors configured. Entities won't be correctly initialized"));
+				return;
+			}
+			if (VisualizationParams.StaticMeshInstanceDescs.IsEmpty())
+			{
+				UE_VLOG_UELOG(this, LogMass, Error, TEXT("No StaticMeshInstanceDescs configured. Entities won't be correctly initialized"));
+				return;
+			}
 
+			TSubclassOf<AActor> LowResTemplateActor = VisualizationParams.LowResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.LowResTemplateActors.Num() - 1)];
+			TSubclassOf<AActor> HighResTemplateActor = VisualizationParams.HighResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.HighResTemplateActors.Num() - 1)];
+			FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = VisualizationParams.StaticMeshInstanceDescs[FMath::Min(UnitArmyId, VisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
+
+			const int32 NumEntities = Context.GetNumEntities();
+			for (int32 EntityIndex{}; EntityIndex < NumEntities; ++EntityIndex)
+			{
 				//Spawn Transform
-				const int32 NumEntities = Context.GetNumEntities();
-				TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
-				check(NextTransformIndex + NumEntities <= Transforms.Num());
-
-				FMemory::Memcpy(LocationList.GetData(), &Transforms[NextTransformIndex], NumEntities * LocationList.GetTypeSize());
-				NextTransformIndex += NumEntities;				
+				const int32 AuxIndex = FMath::RandRange(0, Transforms.Num() - 1);
+				TransformList[EntityIndex].GetMutableTransform() = Transforms[AuxIndex];
+				if (bShouldOverrideSpawnRotation)
+				{
+					TransformList[EntityIndex].GetMutableTransform().SetRotation(SpawnRotation);
+				}
+				Transforms.RemoveAtSwap(AuxIndex, 1, /*bAllowShrinking=*/false);
 
 				//Representation
-				if (VisualizationParams.LowResTemplateActors.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No LowResTemplateActors configured. Entities won't be correctly initialized"));
-					return;
-				}
-				if (VisualizationParams.HighResTemplateActors.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No HighResTemplateActors configured. Entities won't be correctly initialized"));
-					return;
-				}
-				if (VisualizationParams.StaticMeshInstanceDescs.IsEmpty())
-				{
-					UE_VLOG_UELOG(this, LogMass, Error, TEXT("No StaticMeshInstanceDescs configured. Entities won't be correctly initialized"));
-					return;
-				}
+				RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
+				RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
+				RepresentationList[EntityIndex].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
 
-				TSubclassOf<AActor> LowResTemplateActor = VisualizationParams.LowResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.LowResTemplateActors.Num() - 1)];
-				TSubclassOf<AActor> HighResTemplateActor = VisualizationParams.HighResTemplateActors[FMath::Min(UnitArmyId, VisualizationParams.HighResTemplateActors.Num() - 1)];
-				FStaticMeshInstanceVisualizationDesc StaticMeshInstanceDesc = VisualizationParams.StaticMeshInstanceDescs[FMath::Min(UnitArmyId, VisualizationParams.StaticMeshInstanceDescs.Num() - 1)];
+				//Army Id
+				ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
 
-				//Loop over entities
-				const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-				for (int32 EntityIndex{}; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
-				{
-					if (bShouldOverrideSpawnRotation)
-					{
-						TransformList[EntityIndex].GetMutableTransform().SetRotation(SpawnRotation);
-					}
-
-					//Representation
-					RepresentationList[EntityIndex].StaticMeshDescIndex = RepresentationSubsystem->FindOrAddStaticMeshDesc(StaticMeshInstanceDesc);
-					RepresentationList[EntityIndex].LowResTemplateActorIndex = LowResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(LowResTemplateActor.Get()) : INDEX_NONE;
-					RepresentationList[EntityIndex].HighResTemplateActorIndex = HighResTemplateActor.Get() ? RepresentationSubsystem->FindOrAddTemplateActor(HighResTemplateActor.Get()) : INDEX_NONE;
-
-					//Army Id
-					ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
-
-					//Add to subsystem
-					TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
-				}
-			});
-	}
+				//Add to subsystem
+				TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
+			}
+		});
 }
