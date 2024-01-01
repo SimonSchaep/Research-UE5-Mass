@@ -19,10 +19,8 @@ UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 {
 	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
-	ProcessingPhase = EMassProcessingPhase::FrameEnd;
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-
-	
 }
 
 void UTargetAcquisitionProcessor::Initialize(UObject& Owner)
@@ -82,8 +80,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 
 #ifdef ENABLE_SPATIAL
 				auto& Octrees = TargetAcquisitionSubsystem->GetOctrees();
-				auto& ObjectIDToEntityHandleMap = TargetAcquisitionSubsystem->GetObjectIDToEntityHandleMap();
-				
+
 				for (int32 OctreeIndex{}; OctreeIndex < Octrees.Num(); ++OctreeIndex)
 				{
 					//Skip those with the same army id
@@ -92,21 +89,34 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						continue;
 					}
 
-					//float MaxHalfWidthToCheck = FMath::Min(ClosestDistanceSqr, 100000); //Increase this if you want to query a larger radius
-					//const float HalfWidthToCheckStep = 1000;
-
-					//Octrees[OctreeIndex]->
-
-					//OctreeDataList[EntityIndex].ObjectId;
-
-					UE::Geometry::FAxisAlignedBox3d BoundsToCheck{
-						TransformList[EntityIndex].GetTransform().GetLocation(),
-						RadiusList[EntityIndex].Radius * 1000
-					};
+					//This is an approximation
 					int count{};
-					Octrees[OctreeIndex]->RangeQuery(BoundsToCheck, [&](int32 ObjectId)
+					Octrees[OctreeIndex].FindNearbyElements(TransformList[EntityIndex].GetTransform().GetLocation(), [&](const FUnitOctreeElement& OctreeElement)
 						{
-							const FMassEntityHandle& Handle = ObjectIDToEntityHandleMap[ObjectId];
+							const FMassEntityHandle& Handle = OctreeElement.EntityHandle;
+
+							if (!EntityManager.IsEntityValid(Handle)) return;
+
+							auto HandleTransform = EntityManager.GetFragmentDataStruct(Handle, FTransformFragment::StaticStruct()).Get<FTransformFragment>();
+							float DistanceSqr = FVector::DistSquared(TransformList[EntityIndex].GetTransform().GetLocation(), HandleTransform.GetTransform().GetLocation());
+							if (DistanceSqr < ClosestDistanceSqr)
+							{
+								TargetAcquisitionList[EntityIndex].CurrentTarget = Handle;
+								ClosestDistanceSqr = DistanceSqr;
+							}
+							count++;
+						});
+
+					float ClosestDistance = FMath::Sqrt(ClosestDistanceSqr);
+
+					FBoxCenterAndExtent Bounds{
+						TransformList[EntityIndex].GetTransform().GetLocation(),
+						FVector{ClosestDistance,ClosestDistance,ClosestDistance}
+					};
+
+					Octrees[OctreeIndex].FindElementsWithBoundsTest(Bounds, [&](const FUnitOctreeElement& OctreeElement)
+						{
+							const FMassEntityHandle& Handle = OctreeElement.EntityHandle;
 
 							if (!EntityManager.IsEntityValid(Handle)) return;
 
@@ -147,6 +157,9 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 					}
 				}
 #endif // ENABLE_SPATIAL
-			};
+			}
+#ifdef ENABLE_MULTITHREADING
+			);
+#endif // ENABLE_MULTITHREADING
 		}));
 }

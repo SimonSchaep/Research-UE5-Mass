@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "MassEntityTypes.h"
-#include "Spatial/SparseDynamicOctree3.h"
-#include "Math/GenericOctree.h"
+#include "UnitOctreeTypes.h"
 #include "TargetAcquisitionOctreeSubsystem.generated.h"
+
+//Made similar to SmartObjectOctree
 
 
 UCLASS()
@@ -30,22 +31,17 @@ public:
 
 	void UpdatePossibleTargetEntity(const FMassEntityHandle& Entity, int ArmyId);
 
-	const TArray<TUniquePtr<UE::Geometry::FSparseDynamicOctree3>>& GetOctrees()const;
-	const TMap<int32, FMassEntityHandle>& GetObjectIDToEntityHandleMap()const;
+	const TArray<FUnitOctree>& GetOctrees()const;
 
 private:
 	FVector Origin = FVector(0, 0, 0);
-	double Extent = 40000.0;
-
-	//TOctree2<FMassEntityHandle, octreesemantics> oct;
+	double Extent = 4000000.0;
 
 	TArray<int> UnitCounts;
 
-	int32 NextObjectId = 0;
-
-	TMap<int32, FMassEntityHandle> ObjectIDToEntityHandleMap;
-
 	FMassEntityManager* EntityManager;
 
-	TArray<TUniquePtr<UE::Geometry::FSparseDynamicOctree3>> Octrees;
+	TArray<FUnitOctree> Octrees;
+
+	bool bDrawDebug = false;
 };

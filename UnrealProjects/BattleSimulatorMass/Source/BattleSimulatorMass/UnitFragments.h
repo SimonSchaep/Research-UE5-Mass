@@ -10,6 +10,7 @@
 #include "MassCommonTypes.h"
 #include "MassSpawnerTypes.h"
 #include "BoxTypes.h"
+#include "UnitOctreeTypes.h"
 #include "UnitFragments.generated.h"
 
 
@@ -70,9 +71,13 @@ struct BATTLESIMULATORMASS_API FUnitOctreeDataFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	int32 ObjectId;
+		//int32 ObjectId;
 
-	UE::Geometry::FAxisAlignedBox3d Bounds;
+	FUnitOctreeDataFragment() : SharedOctreeId(MakeShareable(new FUnitOctreeId())) {}
+
+	FUnitOctreeIdSharedRef SharedOctreeId;
+
+	//FBoxSphereBounds Bounds;
 };
 
 

@@ -6,6 +6,7 @@
 
 UTargetAcquisitionSubsystem::UTargetAcquisitionSubsystem()
 {
+
 }
 
 TStatId UTargetAcquisitionSubsystem::GetStatId() const

@@ -107,6 +107,7 @@ void UMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecuti
 				{
 					MoveTarget.Center = TargetEntityTransform.GetTransform().GetLocation();
 				}
+				//DrawDebugLine(GetWorld(), TargetEntityTransform.GetTransform().GetLocation(), Transform.GetLocation(), FColor::Red);
 				MoveTarget.DistanceToGoal = TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr;
 				MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
 				MoveTarget.DesiredSpeed = FMassInt16Real(MovementParams.DefaultDesiredSpeed);

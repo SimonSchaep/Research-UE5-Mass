@@ -7,11 +7,14 @@
 #include "MassEntityManager.h"
 #include "MassEntityView.h"
 #include "UnitFragments.h"
+#include "DrawDebugHelpers.h"
 
 
 UTargetAcquisitionOctreeSubsystem::UTargetAcquisitionOctreeSubsystem()
 {
+
 }
+
 
 TStatId UTargetAcquisitionOctreeSubsystem::GetStatId() const
 {
@@ -39,6 +42,41 @@ void UTargetAcquisitionOctreeSubsystem::Tick(float DeltaTime)
 			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Army %i: %i"), i, UnitCounts[i]), false);
 		}			
 	}
+
+	if (bDrawDebug)
+	{
+		for (const FUnitOctree& Octree : Octrees)
+		{
+			Octree.FindNodesWithPredicate(
+				[this](FUnitOctree::FNodeIndex /*ParentNodeIndex*/, FUnitOctree::FNodeIndex /*NodeIndex*/, const FBoxCenterAndExtent& /*NodeBounds*/)
+				{
+					return true;
+				},
+				[this, &Octree](FUnitOctree::FNodeIndex /*ParentNodeIndex*/, FUnitOctree::FNodeIndex NodeIndex, const FBoxCenterAndExtent& NodeBounds)
+				{
+					FVector MaxExtent = NodeBounds.Extent;
+					FVector Center = NodeBounds.Center;
+
+					DrawDebugBox(GetWorld(), Center, MaxExtent, FColor().Blue, false, 0.0f);
+					DrawDebugSphere(GetWorld(), Center + MaxExtent, 4.0f, 12, FColor().Green, false, 0.0f);
+					DrawDebugSphere(GetWorld(), Center - MaxExtent, 4.0f, 12, FColor().Red, false, 0.0f);
+
+					TArrayView<const FUnitOctreeElement> Elements = Octree.GetElementsForNode(NodeIndex);
+
+					for (int i = 0; i < Elements.Num(); i++)
+					{
+						// Draw debug boxes around elements
+						float Max = Elements[i].Bounds.BoxExtent.GetMax();
+						MaxExtent = FVector(Max, Max, Max);
+						Center = Elements[i].Bounds.Origin;
+
+						DrawDebugBox(GetWorld(), Center, MaxExtent, FColor().Yellow, false, 0.0f);
+						DrawDebugSphere(GetWorld(), Center + MaxExtent, 4.0f, 12, FColor().White, false, 0.0f);
+						DrawDebugSphere(GetWorld(), Center - MaxExtent, 4.0f, 12, FColor().White, false, 0.0f);
+					}
+				});
+		}
+	}	
 }
 
 void UTargetAcquisitionOctreeSubsystem::AddPossibleTargetEntity(const FMassEntityHandle& Entity, int ArmyId)
@@ -46,31 +84,21 @@ void UTargetAcquisitionOctreeSubsystem::AddPossibleTargetEntity(const FMassEntit
 	//Add octrees until armyid
 	while (ArmyId >= Octrees.Num())
 	{
-		int32 id = Octrees.Add(MakeUnique<UE::Geometry::FSparseDynamicOctree3>());
-		Octrees[id]->RootDimension = 1000.f;
-		Octrees[id]->SetMaxTreeDepth(5);
-
+		Octrees.Add(FUnitOctree{Origin, Extent});
 		UnitCounts.Add(0);
-	}
+	}	
 
 	//Calculate bounds
 	FMassEntityView View{ *EntityManager, Entity };
 	FVector Center = View.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 	float Radius = View.GetFragmentData<FAgentRadiusFragment>().Radius;
-	UE::Geometry::FAxisAlignedBox3d Bounds{Center, double(Radius)};
+	FBoxSphereBounds Bounds{ Center, FVector{Radius,Radius,Radius}, Radius };
+
+	const FUnitOctreeIdSharedRef& SharedOctreeId = View.GetFragmentData<FUnitOctreeDataFragment>().SharedOctreeId;
 
 	//Insert object in Octree
-	Octrees[ArmyId]->InsertObject(NextObjectId, Bounds);
+	Octrees[ArmyId].AddElement(FUnitOctreeElement{ Entity, Bounds, SharedOctreeId });
 
-	//Update FUnitOctreeDataFragment values
-	View.GetFragmentData<FUnitOctreeDataFragment>().Bounds = Bounds;
-	View.GetFragmentData<FUnitOctreeDataFragment>().ObjectId = NextObjectId;
-
-	//Store to map
-	ObjectIDToEntityHandleMap.Add(NextObjectId, Entity);
-
-
-	++NextObjectId;
 	++UnitCounts[ArmyId];
 }
 
@@ -78,9 +106,9 @@ void UTargetAcquisitionOctreeSubsystem::RemovePossibleTargetEntity(const FMassEn
 {
 	FMassEntityView View = FMassEntityView(*EntityManager, Entity);
 	
-	int32 Id = View.GetFragmentData<FUnitOctreeDataFragment>().ObjectId;
-	Octrees[ArmyId]->RemoveObject(Id);
-	ObjectIDToEntityHandleMap.Remove(Id);
+	const FOctreeElementId2& Id = View.GetFragmentData<FUnitOctreeDataFragment>().SharedOctreeId->Id;
+	
+	Octrees[ArmyId].RemoveElement(Id);
 
 	--UnitCounts[ArmyId];
 }
@@ -91,27 +119,21 @@ void UTargetAcquisitionOctreeSubsystem::UpdatePossibleTargetEntity(const FMassEn
 	FMassEntityView View{ *EntityManager, Entity };
 	FVector Center = View.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 	float Radius = View.GetFragmentData<FAgentRadiusFragment>().Radius;
-	UE::Geometry::FAxisAlignedBox3d Bounds{Center, double(Radius)};
+	FBoxSphereBounds Bounds{ Center, FVector{Radius,Radius,Radius}, Radius };
 
-	int32 ObjectId = View.GetFragmentData<FUnitOctreeDataFragment>().ObjectId;
+	const FOctreeElementId2& Id = View.GetFragmentData<FUnitOctreeDataFragment>().SharedOctreeId->Id;
 
-	uint32 CellId;
+	FUnitOctreeElement ElementCopy = Octrees[ArmyId].GetElementById(Id);
 
-	//Reinsert if needed
-	if (Octrees[ArmyId]->CheckIfObjectNeedsReinsert(ObjectId, Bounds, CellId))
-	{
-		Octrees[ArmyId]->ReinsertObject(ObjectId, Bounds, CellId);
-	}
+	Octrees[ArmyId].RemoveElement(Id);
 
-	View.GetFragmentData<FUnitOctreeDataFragment>().Bounds = Bounds;
+	ElementCopy.Bounds = Bounds;
+
+	//Insert object in Octree
+	Octrees[ArmyId].AddElement(ElementCopy);
 }
 
-const TArray<TUniquePtr<UE::Geometry::FSparseDynamicOctree3>>& UTargetAcquisitionOctreeSubsystem::GetOctrees() const
+const TArray<FUnitOctree>& UTargetAcquisitionOctreeSubsystem::GetOctrees() const
 {
 	return Octrees;
-}
-
-const TMap<int32, FMassEntityHandle>& UTargetAcquisitionOctreeSubsystem::GetObjectIDToEntityHandleMap() const
-{
-	return ObjectIDToEntityHandleMap;
 }
