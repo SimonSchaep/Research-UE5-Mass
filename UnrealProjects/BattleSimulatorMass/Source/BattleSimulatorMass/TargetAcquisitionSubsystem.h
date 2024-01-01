@@ -25,7 +25,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId);
-	void RemovePossibleTargetEntity(const FMassEntityHandle& Handle);
+	void RemovePossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId);
 
 	const TArray<TArray<FMassEntityHandle>>& GetPossibleTargetEntities()const;
 

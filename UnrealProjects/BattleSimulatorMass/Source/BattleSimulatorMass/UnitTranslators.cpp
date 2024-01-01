@@ -10,7 +10,7 @@
 #include "Translators/MassSceneComponentLocationTranslator.h"
 
 UUnitOrientationTranslator::UUnitOrientationTranslator()
-	: EntityQuery(*this)
+	: EntityQuery{ *this }
 {
 	ExecutionFlags = (int32)EProcessorExecutionFlags::All;
 	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::UpdateWorldFromMass;

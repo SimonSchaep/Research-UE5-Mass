@@ -26,5 +26,10 @@ private:
 	FMassEntityQuery EntityQuery;
 
 	class UMassSpawnerSubsystem* SpawnerSubsystem;
+	
+#ifdef ENABLE_SPATIAL
+	class UTargetAcquisitionOctreeSubsystem* TargetAcquisitionSubsystem;
+#else
 	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
+#endif // ENABLE_SPATIAL
 };

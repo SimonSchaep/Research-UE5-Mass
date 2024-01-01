@@ -16,7 +16,7 @@
 #include "NavigationSystem.h"
 
 UMovementProcessor::UMovementProcessor()
-	:EntityQuery(*this)
+	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);

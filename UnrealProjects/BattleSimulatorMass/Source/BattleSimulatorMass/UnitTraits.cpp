@@ -12,6 +12,10 @@
 void UArmyIdTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
 	BuildContext.AddFragment<FArmyIdFragment>();
+
+#ifdef ENABLE_SPATIAL
+	BuildContext.AddFragment<FUnitOctreeDataFragment>();
+#endif // ENABLE_SPATIAL
 }
 
 // Attack

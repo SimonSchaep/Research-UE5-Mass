@@ -12,7 +12,7 @@
 #include "BattleSimGameMode.h"
 
 UAttackProcessor::UAttackProcessor()
-	:EntityQuery(*this)
+	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
@@ -21,8 +21,6 @@ UAttackProcessor::UAttackProcessor()
 void UAttackProcessor::Initialize(UObject& Owner)
 {
 	Super::Initialize(Owner);
-
-	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionSubsystem>(Owner.GetWorld());
 
 	GameMode = Cast<ABattleSimGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode == nullptr)
@@ -55,6 +53,7 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 			const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
 			const FUnitAnimParameters& AnimParams = Context.GetConstSharedFragment<FUnitAnimParameters>();
 			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
+
 
 			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)
 			{
@@ -94,6 +93,7 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					//Check if dead
 					if (TargetEntityHealth.CurrentHealth <= 0)
 					{
+
 						Mutex.Lock();
 						Context.Defer().AddTag<FDyingTag>(TargetEntity);
 						Mutex.Unlock();
@@ -121,78 +121,78 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 			});
 		}));
 #else
-	if (!GameMode->HasStartedSimulation()) return;
+		if (!GameMode->HasStartedSimulation()) return;
 
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
-		{
-			const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();
-			const TArrayView<FUnitAttackFragment> AttackList = Context.GetMutableFragmentView<FUnitAttackFragment>();
-			const TConstArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetFragmentView<FUnitTargetAcquisitionFragment>();
-			const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
-			const FUnitAnimParameters& AnimParams = Context.GetConstSharedFragment<FUnitAnimParameters>();
-			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
-
-			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+		EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 			{
-				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
-				{
-					//Timer
-					if (AttackList[EntityIndex].AttackDelayTimer > 0)
-					{
-						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+				const TArrayView<FUnitAnimStateFragment> AnimStateList = Context.GetMutableFragmentView<FUnitAnimStateFragment>();
+				const TArrayView<FUnitAttackFragment> AttackList = Context.GetMutableFragmentView<FUnitAttackFragment>();
+				const TConstArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetFragmentView<FUnitTargetAcquisitionFragment>();
+				const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
+				const FUnitAnimParameters& AnimParams = Context.GetConstSharedFragment<FUnitAnimParameters>();
+				const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
 
-						if (AttackList[EntityIndex].AttackDelayTimer <= AnimParams.AnimationAttackDelay)
+				for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+				{
+					if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
+					{
+						//Timer
+						if (AttackList[EntityIndex].AttackDelayTimer > 0)
 						{
-							if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
+							AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+
+							if (AttackList[EntityIndex].AttackDelayTimer <= AnimParams.AnimationAttackDelay)
 							{
-								AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+								if (AnimStateList[EntityIndex].UnitAnimState != EUnitAnimState::Dead)
+								{
+									AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Attacking;
+								}
 							}
+
+							if (AttackList[EntityIndex].AttackDelayTimer > 0) continue;
 						}
 
-						if (AttackList[EntityIndex].AttackDelayTimer > 0) return;
-					}
 
+						// ATTACK
 
-					// ATTACK
+						//Increase timer
+						AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
-					//Increase timer
-					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
+						//Get health fragment
+						const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
+						if (!TargetEntity.IsValid()) continue;
+						auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
+						FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
 
-					//Get health fragment
-					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
-					if (!TargetEntity.IsValid()) return;
-					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
-					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
+						//Do damage
+						TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
 
-					//Do damage
-					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
+						//Check if dead
+						if (TargetEntityHealth.CurrentHealth <= 0)
+						{
+							Context.Defer().AddTag<FDyingTag>(TargetEntity);
+						}
 
-					//Check if dead
-					if (TargetEntityHealth.CurrentHealth <= 0)
-					{
-						Context.Defer().AddTag<FDyingTag>(TargetEntity);
-					}
-
-					AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
-				}
-				else
-				{
-					//Count down timer until anim delay
-					if (AttackList[EntityIndex].AttackDelayTimer > AnimParams.AnimationAttackDelay)
-					{
-						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
 					}
 					else
 					{
-						AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
-					}
+						//Count down timer until anim delay
+						if (AttackList[EntityIndex].AttackDelayTimer > AnimParams.AnimationAttackDelay)
+						{
+							AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
+						}
+						else
+						{
+							AttackList[EntityIndex].AttackDelayTimer = AnimParams.AnimationAttackDelay;
+						}
 
-					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
-					{
-						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+						if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
+						{
+							AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+						}
 					}
 				}
-			}
 		}));
 #endif // ENABLE_MULTITHREADING	
 }

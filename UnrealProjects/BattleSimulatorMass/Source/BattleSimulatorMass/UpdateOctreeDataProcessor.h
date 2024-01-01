@@ -4,30 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "MassProcessor.h"
-#include "UnitInitializerProcessor.generated.h"
+#include "UpdateOctreeDataProcessor.generated.h"
 
-
-//Based on UMassSpawnLocationProcessor
-
+/**
+ * 
+ */
 UCLASS()
-class BATTLESIMULATORMASS_API UUnitInitializerProcessor : public UMassProcessor
+class BATTLESIMULATORMASS_API UUpdateOctreeDataProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
-	
+
 public:
-	UUnitInitializerProcessor();
+	UUpdateOctreeDataProcessor();
 
 protected:
 	virtual void Initialize(UObject& Owner)override;
-	virtual void ConfigureQueries()override;
+	virtual void ConfigureQueries() override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)override;
 
 private:
 	FMassEntityQuery EntityQuery;
 
-#ifdef ENABLE_SPATIAL
 	class UTargetAcquisitionOctreeSubsystem* TargetAcquisitionSubsystem;
-#else
-	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
-#endif // ENABLE_SPATIAL
 };

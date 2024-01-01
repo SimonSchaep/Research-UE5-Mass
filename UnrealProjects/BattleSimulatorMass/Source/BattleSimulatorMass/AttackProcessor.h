@@ -25,8 +25,6 @@ protected:
 private:
 	FMassEntityQuery EntityQuery;
 
-	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
-
 	class ABattleSimGameMode* GameMode;
 
 	FCriticalSection Mutex;

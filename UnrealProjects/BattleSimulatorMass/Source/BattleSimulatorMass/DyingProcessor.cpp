@@ -14,10 +14,11 @@
 #include "MassSpawnerSubsystem.h"
 #include "MassEntityView.h"
 #include "TargetAcquisitionSubsystem.h"
+#include "TargetAcquisitionOctreeSubsystem.h"
 #include "MassMovementFragments.h"
 
 UDyingProcessor::UDyingProcessor()
-	:EntityQuery(*this)
+	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
@@ -30,7 +31,11 @@ void UDyingProcessor::Initialize(UObject& Owner)
 
 	SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(Owner.GetWorld());
 
+#ifdef ENABLE_SPATIAL
+	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionOctreeSubsystem>(Owner.GetWorld());
+#else
 	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionSubsystem>(Owner.GetWorld());
+#endif // ENABLE_SPATIAL	
 }
 
 void UDyingProcessor::ConfigureQueries()
@@ -62,6 +67,7 @@ void UDyingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionC
 			UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
 			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
 
+
 			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 			{
 				//first time logic
@@ -69,8 +75,11 @@ void UDyingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionC
 				{
 					const FMassEntityHandle& Entity = Context.GetEntity(EntityIndex);
 
-					TargetAcquisitionSubsystem->RemovePossibleTargetEntity(Entity);
+					TargetAcquisitionSubsystem->RemovePossibleTargetEntity(Entity, ArmyIdList[EntityIndex].ArmyId);
 
+#ifdef ENABLE_SPATIAL
+					Context.Defer().RemoveFragment<FUnitOctreeDataFragment>(Entity);
+#endif // ENABLE_SPATIAL
 					Context.Defer().RemoveFragment<FMassForceFragment>(Entity);
 					Context.Defer().RemoveFragment<FMassVelocityFragment>(Entity);
 

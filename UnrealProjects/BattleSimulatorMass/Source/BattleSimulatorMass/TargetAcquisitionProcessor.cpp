@@ -8,13 +8,14 @@
 #include "UnitFragments.h"
 #include "UnitTags.h"
 #include "TargetAcquisitionSubsystem.h"
+#include "TargetAcquisitionOctreeSubsystem.h"
 #include "MassEntityView.h"
 #include "Kismet/GameplayStatics.h"
 #include "BattleSimGameMode.h"
 #include "Async/ParallelFor.h"
 
 UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
-	: EntityQuery(*this)
+	: EntityQuery{ *this }
 {
 	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
@@ -28,7 +29,11 @@ void UTargetAcquisitionProcessor::Initialize(UObject& Owner)
 {
 	Super::Initialize(Owner);
 
+#ifdef ENABLE_SPATIAL
+	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionOctreeSubsystem>(Owner.GetWorld());
+#else
 	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionSubsystem>(Owner.GetWorld());
+#endif // ENABLE_SPATIAL	
 
 	GameMode = Cast<ABattleSimGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode == nullptr)
@@ -40,70 +45,83 @@ void UTargetAcquisitionProcessor::Initialize(UObject& Owner)
 void UTargetAcquisitionProcessor::ConfigureQueries()
 {
 	EntityQuery.AddRequirement<FArmyIdFragment>(EMassFragmentAccess::ReadWrite);
-	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
+#ifdef ENABLE_SPATIAL
+	EntityQuery.AddRequirement<FUnitOctreeDataFragment>(EMassFragmentAccess::ReadOnly);
+#endif // ENABLE_SPATIAL
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 }
 
 void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
-#ifdef ENABLE_MULTITHREADING
 	if (!GameMode->HasStartedSimulation()) return;
 	
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
 			const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
 			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
+			const TConstArrayView<FTransformFragment> TransformList = Context.GetFragmentView<FTransformFragment>();
+			const TConstArrayView<FAgentRadiusFragment> RadiusList = Context.GetFragmentView<FAgentRadiusFragment>();
 
+#ifdef ENABLE_SPATIAL
+			const TConstArrayView<FUnitOctreeDataFragment> OctreeDataList = Context.GetFragmentView<FUnitOctreeDataFragment>();
+#endif // ENABLE_SPATIAL
+
+#ifdef ENABLE_MULTITHREADING
 			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)
-			{
-				//Acquire target
-				float& ClosestDistanceSqr = TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr;
-				ClosestDistanceSqr = FLT_MAX;
-
-				//Loop over all entities in TargetAcquisitionSubsystem
-				auto& EntitiesArrays = TargetAcquisitionSubsystem->GetPossibleTargetEntities();
-				for (int32 ArrayIndex{}; ArrayIndex < EntitiesArrays.Num(); ++ArrayIndex)
-				{
-					//Skip those with the same army id
-					if (ArrayIndex == ArmyIdList[EntityIndex].ArmyId)
-					{
-						continue;
-					}
-
-					//Find closest entity
-					for (const FMassEntityHandle& Handle : EntitiesArrays[ArrayIndex])
-					{
-						if (!EntityManager.IsEntityValid(Handle)) continue;
-
-						auto HandleTransform = EntityManager.GetFragmentDataStruct(Handle, FTransformFragment::StaticStruct()).Get<FTransformFragment>();
-						float DistanceSqr = FVector::DistSquared(TransformList[EntityIndex].GetTransform().GetLocation(), HandleTransform.GetTransform().GetLocation());
-						if (DistanceSqr < ClosestDistanceSqr)
-						{
-							TargetAcquisitionList[EntityIndex].CurrentTarget = Handle;
-							ClosestDistanceSqr = DistanceSqr;
-						}
-					}
-				}
-			});
-		}));
 #else
-	if (!GameMode->HasStartedSimulation()) return;
-
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
-		{
-			const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
-			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
-			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
-
 			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+#endif // ENABLE_MULTITHREADING
 			{
 				//Acquire target
 				float& ClosestDistanceSqr = TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr;
 				ClosestDistanceSqr = FLT_MAX;
 
+#ifdef ENABLE_SPATIAL
+				auto& Octrees = TargetAcquisitionSubsystem->GetOctrees();
+				auto& ObjectIDToEntityHandleMap = TargetAcquisitionSubsystem->GetObjectIDToEntityHandleMap();
+				
+				for (int32 OctreeIndex{}; OctreeIndex < Octrees.Num(); ++OctreeIndex)
+				{
+					//Skip those with the same army id
+					if (OctreeIndex == ArmyIdList[EntityIndex].ArmyId)
+					{
+						continue;
+					}
+
+					//float MaxHalfWidthToCheck = FMath::Min(ClosestDistanceSqr, 100000); //Increase this if you want to query a larger radius
+					//const float HalfWidthToCheckStep = 1000;
+
+					//Octrees[OctreeIndex]->
+
+					//OctreeDataList[EntityIndex].ObjectId;
+
+					UE::Geometry::FAxisAlignedBox3d BoundsToCheck{
+						TransformList[EntityIndex].GetTransform().GetLocation(),
+						RadiusList[EntityIndex].Radius * 1000
+					};
+					int count{};
+					Octrees[OctreeIndex]->RangeQuery(BoundsToCheck, [&](int32 ObjectId)
+						{
+							const FMassEntityHandle& Handle = ObjectIDToEntityHandleMap[ObjectId];
+
+							if (!EntityManager.IsEntityValid(Handle)) return;
+
+							auto HandleTransform = EntityManager.GetFragmentDataStruct(Handle, FTransformFragment::StaticStruct()).Get<FTransformFragment>();
+							float DistanceSqr = FVector::DistSquared(TransformList[EntityIndex].GetTransform().GetLocation(), HandleTransform.GetTransform().GetLocation());
+							if (DistanceSqr < ClosestDistanceSqr)
+							{
+								TargetAcquisitionList[EntityIndex].CurrentTarget = Handle;
+								ClosestDistanceSqr = DistanceSqr;
+							}
+							count++;
+						});
+					count = count;
+				}
+#else
 				//Loop over all entities in TargetAcquisitionSubsystem
 				auto& EntitiesArrays = TargetAcquisitionSubsystem->GetPossibleTargetEntities();
 				for (int32 ArrayIndex{}; ArrayIndex < EntitiesArrays.Num(); ++ArrayIndex)
@@ -128,7 +146,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						}
 					}
 				}
-			}
+#endif // ENABLE_SPATIAL
+			};
 		}));
-#endif // ENABLE_MULTITHREADING	
 }

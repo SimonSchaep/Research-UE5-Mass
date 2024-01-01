@@ -9,6 +9,7 @@
 #include "MassCommonFragments.h"
 #include "MassCommonTypes.h"
 #include "MassSpawnerTypes.h"
+#include "BoxTypes.h"
 #include "UnitFragments.generated.h"
 
 
@@ -62,6 +63,16 @@ struct BATTLESIMULATORMASS_API FUnitDeathFragment : public FMassFragment
 	GENERATED_BODY()
 
 	float DeathDelayTimer = 0.f;
+};
+
+USTRUCT()
+struct BATTLESIMULATORMASS_API FUnitOctreeDataFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	int32 ObjectId;
+
+	UE::Geometry::FAxisAlignedBox3d Bounds;
 };
 
 

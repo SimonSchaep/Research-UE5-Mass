@@ -6,9 +6,7 @@
 #include "MassProcessor.h"
 #include "TargetAcquisitionProcessor.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class BATTLESIMULATORMASS_API UTargetAcquisitionProcessor : public UMassProcessor
 {
@@ -27,5 +25,10 @@ private:
 
 	class ABattleSimGameMode* GameMode;
 
+#ifdef ENABLE_SPATIAL
+	class UTargetAcquisitionOctreeSubsystem* TargetAcquisitionSubsystem;
+#else
 	class UTargetAcquisitionSubsystem* TargetAcquisitionSubsystem;
+#endif // ENABLE_SPATIAL
+	
 };

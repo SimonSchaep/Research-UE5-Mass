@@ -6,7 +6,7 @@
 #include "MassExecutionContext.h"
 
 UDestroyEntitiesProcessor::UDestroyEntitiesProcessor()
-	:EntityQuery(*this)
+	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);

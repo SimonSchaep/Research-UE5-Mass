@@ -10,13 +10,14 @@
 #include "MassObserverRegistry.h"
 #include "MassEQSSpawnDataGenerator.h"
 #include "TargetAcquisitionSubsystem.h"
+#include "TargetAcquisitionOctreeSubsystem.h"
 #include "MassRepresentationFragments.h"
 #include "MassRepresentationSubsystem.h"
 
 //Based on UMassSpawnLocationProcessor
 
 UUnitInitializerProcessor::UUnitInitializerProcessor()
-	:EntityQuery(*this)
+	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = false;
 }
@@ -25,14 +26,19 @@ void UUnitInitializerProcessor::Initialize(UObject& Owner)
 {
 	Super::Initialize(Owner);
 
+#ifdef ENABLE_SPATIAL
+	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionOctreeSubsystem>(Owner.GetWorld());
+#else
 	TargetAcquisitionSubsystem = UWorld::GetSubsystem<UTargetAcquisitionSubsystem>(Owner.GetWorld());
+#endif // ENABLE_SPATIAL	
 }
 
 void UUnitInitializerProcessor::ConfigureQueries()
 {
-	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);	
 	EntityQuery.AddRequirement<FArmyIdFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassRepresentationFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddConstSharedRequirement<FUnitVisualizationParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddSharedRequirement<FMassRepresentationSubsystemSharedFragment>(EMassFragmentAccess::ReadOnly);
 }
@@ -88,6 +94,7 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 			const TArrayView<FTransformFragment> TransformList = Context.GetMutableFragmentView<FTransformFragment>();
 			const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
 			const TArrayView<FMassRepresentationFragment> RepresentationList = Context.GetMutableFragmentView<FMassRepresentationFragment>();
+			const TConstArrayView<FAgentRadiusFragment> RadiusList = Context.GetFragmentView<FAgentRadiusFragment>();
 			const FUnitVisualizationParameters& VisualizationParams = Context.GetConstSharedFragment<FUnitVisualizationParameters>();
 			UMassRepresentationSubsystem* RepresentationSubsystem = Context.GetSharedFragment<FMassRepresentationSubsystemSharedFragment>().RepresentationSubsystem;
 
@@ -132,7 +139,10 @@ void UUnitInitializerProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				ArmyIdList[EntityIndex].ArmyId = UnitArmyId;
 
 				//Add to subsystem
-				TargetAcquisitionSubsystem->AddPossibleTargetEntity(Context.GetEntity(EntityIndex), UnitArmyId);
+				TargetAcquisitionSubsystem->AddPossibleTargetEntity(
+					Context.GetEntity(EntityIndex),
+					UnitArmyId
+				);
 			}
 		});
 }
