@@ -10,7 +10,6 @@ UDestroyEntitiesProcessor::UDestroyEntitiesProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-	ProcessingPhase = EMassProcessingPhase::PostPhysics;
 }
 
 void UDestroyEntitiesProcessor::ConfigureQueries()

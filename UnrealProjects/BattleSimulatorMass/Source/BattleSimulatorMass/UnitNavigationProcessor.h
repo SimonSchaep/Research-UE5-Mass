@@ -14,4 +14,18 @@ class BATTLESIMULATORMASS_API UUnitNavigationProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
 	
+public:
+	UUnitNavigationProcessor();
+
+protected:
+	virtual void Initialize(UObject& Owner)override;
+	virtual void ConfigureQueries() override;
+	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)override;
+
+private:
+	FMassEntityQuery EntityQuery;
+
+	class ABattleSimGameMode* GameMode;
+
+	class UNavigationSystemV1* NavigationSystem;
 };

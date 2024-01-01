@@ -71,13 +71,9 @@ struct BATTLESIMULATORMASS_API FUnitOctreeDataFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-		//int32 ObjectId;
-
 	FUnitOctreeDataFragment() : SharedOctreeId(MakeShareable(new FUnitOctreeId())) {}
 
 	FUnitOctreeIdSharedRef SharedOctreeId;
-
-	//FBoxSphereBounds Bounds;
 };
 
 

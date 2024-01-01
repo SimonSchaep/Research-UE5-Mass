@@ -19,7 +19,6 @@ UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 {
 	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
-	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
 }
 
@@ -45,10 +44,6 @@ void UTargetAcquisitionProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FArmyIdFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FUnitTargetAcquisitionFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
-	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
-#ifdef ENABLE_SPATIAL
-	EntityQuery.AddRequirement<FUnitOctreeDataFragment>(EMassFragmentAccess::ReadOnly);
-#endif // ENABLE_SPATIAL
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 }
@@ -62,11 +57,6 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 			const TArrayView<FArmyIdFragment> ArmyIdList = Context.GetMutableFragmentView<FArmyIdFragment>();
 			const TArrayView<FUnitTargetAcquisitionFragment> TargetAcquisitionList = Context.GetMutableFragmentView<FUnitTargetAcquisitionFragment>();
 			const TConstArrayView<FTransformFragment> TransformList = Context.GetFragmentView<FTransformFragment>();
-			const TConstArrayView<FAgentRadiusFragment> RadiusList = Context.GetFragmentView<FAgentRadiusFragment>();
-
-#ifdef ENABLE_SPATIAL
-			const TConstArrayView<FUnitOctreeDataFragment> OctreeDataList = Context.GetFragmentView<FUnitOctreeDataFragment>();
-#endif // ENABLE_SPATIAL
 
 #ifdef ENABLE_MULTITHREADING
 			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)

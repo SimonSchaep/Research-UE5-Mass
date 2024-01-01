@@ -14,9 +14,6 @@ UUpdateOctreeDataProcessor::UUpdateOctreeDataProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-	ProcessingPhase = EMassProcessingPhase::PrePhysics;
-	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Avoidance);
-	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
 }
 
 void UUpdateOctreeDataProcessor::Initialize(UObject& Owner)
