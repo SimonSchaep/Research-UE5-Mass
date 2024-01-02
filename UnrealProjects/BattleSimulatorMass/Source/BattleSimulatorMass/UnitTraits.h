@@ -94,10 +94,6 @@ class BATTLESIMULATORMASS_API UUnitAnimationTrait : public UMassEntityTraitBase
 
 protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
-
-private:
-	UPROPERTY(Category = "Animation", EditAnywhere)
-		FUnitAnimParameters AnimationParameters;
 };
 
 // OrientationSync

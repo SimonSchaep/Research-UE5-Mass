@@ -24,6 +24,10 @@ void UTargetAcquisitionSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+#ifdef ENABLE_SPATIAL
+	return;
+#endif // ENABLE_SPATIAL
+
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Blue, FString::Printf(TEXT("Unit Count:")), false);

@@ -79,7 +79,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						continue;
 					}
 
-					//This is an approximation
+					//Approximate
 					int count{};
 					Octrees[OctreeIndex].FindNearbyElements(TransformList[EntityIndex].GetTransform().GetLocation(), [&](const FUnitOctreeElement& OctreeElement)
 						{
@@ -97,8 +97,9 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 							count++;
 						});
 
-					float ClosestDistance = FMath::Sqrt(ClosestDistanceSqr);
 
+					//Do a precise bounds check to see if there's any closer targets
+					float ClosestDistance = FMath::Sqrt(ClosestDistanceSqr);
 					FBoxCenterAndExtent Bounds{
 						TransformList[EntityIndex].GetTransform().GetLocation(),
 						FVector{ClosestDistance,ClosestDistance,ClosestDistance}
@@ -147,7 +148,14 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 					}
 				}
 #endif // ENABLE_SPATIAL
-			}
+
+				//No target was found
+				if (ClosestDistanceSqr == FLT_MAX)
+				{
+					ClosestDistanceSqr = 0;
+					TargetAcquisitionList[EntityIndex].CurrentTarget = EntityManager.InvalidEntity;
+				}
+			}			
 #ifdef ENABLE_MULTITHREADING
 			);
 #endif // ENABLE_MULTITHREADING

@@ -33,6 +33,11 @@ void UTargetAcquisitionOctreeSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+#ifndef ENABLE_SPATIAL
+	return;
+#endif // ENABLE_SPATIAL
+
+
 	//Print unit counts
 	if (GEngine)
 	{

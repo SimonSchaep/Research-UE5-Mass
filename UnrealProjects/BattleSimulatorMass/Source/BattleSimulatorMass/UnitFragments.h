@@ -92,15 +92,6 @@ struct BATTLESIMULATORMASS_API FUnitDeathParameters : public FMassSharedFragment
 };
 
 USTRUCT()
-struct BATTLESIMULATORMASS_API FUnitAnimParameters : public FMassSharedFragment
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-		float AnimationAttackDelay;
-};
-
-USTRUCT()
 struct BATTLESIMULATORMASS_API FUnitVisualizationParameters : public FMassSharedFragment
 {
 	GENERATED_BODY()
@@ -128,6 +119,9 @@ struct BATTLESIMULATORMASS_API FUnitAttackParameters : public FMassSharedFragmen
 
 	UPROPERTY(EditAnywhere)
 		float Damage = 20.f;
+
+	UPROPERTY(EditAnywhere)
+		float AnimationAttackDelay;
 };
 
 USTRUCT()
