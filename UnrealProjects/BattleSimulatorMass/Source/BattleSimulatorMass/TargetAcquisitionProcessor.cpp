@@ -17,10 +17,9 @@
 UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 	: EntityQuery{ *this }
 {
-	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
-	ProcessingPhase = EMassProcessingPhase::DuringPhysics;
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 }
 
 void UTargetAcquisitionProcessor::Initialize(UObject& Owner)

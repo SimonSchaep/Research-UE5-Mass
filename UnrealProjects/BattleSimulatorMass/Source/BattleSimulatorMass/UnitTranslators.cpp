@@ -12,9 +12,11 @@
 UUnitOrientationTranslator::UUnitOrientationTranslator()
 	: EntityQuery{ *this }
 {
+	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = (int32)EProcessorExecutionFlags::All;
 	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::UpdateWorldFromMass;
 	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
+	bRequiresGameThreadExecution = true;
 }
 
 void UUnitOrientationTranslator::ConfigureQueries()
@@ -22,6 +24,7 @@ void UUnitOrientationTranslator::ConfigureQueries()
 	EntityQuery.AddRequirement<FMassSceneComponentWrapperFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FSyncRotationTag>(EMassFragmentPresence::All);
+	EntityQuery.RequireMutatingWorldAccess();
 }
 
 void UUnitOrientationTranslator::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

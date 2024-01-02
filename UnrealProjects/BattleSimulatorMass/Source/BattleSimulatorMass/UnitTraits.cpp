@@ -6,6 +6,7 @@
 #include "UnitTags.h"
 #include "MassEntityTemplateRegistry.h"
 #include "MassEntityTemplate.h"
+#include "UnitTranslators.h"
 #include "Translators/MassSceneComponentLocationTranslator.h"
 
 // ArmyId
@@ -76,6 +77,8 @@ void UUnitOrientationSyncTrait::BuildTemplate(FMassEntityTemplateBuildContext& B
 	BuildContext.RequireFragment<FMassSceneComponentWrapperFragment>();
 
 	BuildContext.AddTag<FSyncRotationTag>();
+
+	BuildContext.AddTranslator<UUnitOrientationTranslator>();
 }
 
 // Visualization
