@@ -15,6 +15,7 @@ UAttackProcessor::UAttackProcessor()
 	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
 }
 

@@ -112,7 +112,7 @@ void UTargetAcquisitionOctreeSubsystem::RemovePossibleTargetEntity(const FMassEn
 	FMassEntityView View = FMassEntityView(*EntityManager, Entity);
 	
 	const FOctreeElementId2& Id = View.GetFragmentData<FUnitOctreeDataFragment>().SharedOctreeId->Id;
-	
+
 	Octrees[ArmyId].RemoveElement(Id);
 
 	--UnitCounts[ArmyId];
@@ -127,14 +127,15 @@ void UTargetAcquisitionOctreeSubsystem::UpdatePossibleTargetEntity(const FMassEn
 	FBoxSphereBounds Bounds{ Center, FVector{Radius,Radius,Radius}, Radius };
 
 	const FOctreeElementId2& Id = View.GetFragmentData<FUnitOctreeDataFragment>().SharedOctreeId->Id;
+	if(!Octrees[ArmyId].IsValidElementId(Id)) return;
 
+	//Make copy
 	FUnitOctreeElement ElementCopy = Octrees[ArmyId].GetElementById(Id);
-
+	//Remove element
 	Octrees[ArmyId].RemoveElement(Id);
-
+	//Updae bounds
 	ElementCopy.Bounds = Bounds;
-
-	//Insert object in Octree
+	//Insert element in Octree
 	Octrees[ArmyId].AddElement(ElementCopy);
 }
 

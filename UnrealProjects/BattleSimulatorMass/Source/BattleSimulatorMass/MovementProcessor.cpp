@@ -20,6 +20,7 @@ UMovementProcessor::UMovementProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 	//Defined order, so we can stop all avoidance velocity and forces when we don't want to move
 	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Avoidance);
 	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Movement);

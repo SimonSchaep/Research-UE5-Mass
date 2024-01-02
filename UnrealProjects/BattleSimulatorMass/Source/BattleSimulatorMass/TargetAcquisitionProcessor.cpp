@@ -20,6 +20,7 @@ UTargetAcquisitionProcessor::UTargetAcquisitionProcessor()
 	//Will be registered on input in gamemode
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
+	ProcessingPhase = EMassProcessingPhase::DuringPhysics;
 }
 
 void UTargetAcquisitionProcessor::Initialize(UObject& Owner)

@@ -6,6 +6,7 @@
 #include "MassCommonFragments.h"
 #include "MassExecutionContext.h"
 #include "UnitFragments.h"
+#include "UnitTags.h"
 #include "TargetAcquisitionOctreeSubsystem.h"
 #include "Spatial/SparseDynamicOctree3.h"
 
@@ -14,6 +15,7 @@ UUpdateOctreeDataProcessor::UUpdateOctreeDataProcessor()
 {
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
 }
 
 void UUpdateOctreeDataProcessor::Initialize(UObject& Owner)
@@ -29,6 +31,8 @@ void UUpdateOctreeDataProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FArmyIdFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 }
 
 void UUpdateOctreeDataProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -37,7 +41,7 @@ void UUpdateOctreeDataProcessor::Execute(FMassEntityManager& EntityManager, FMas
 		{
 			const TArrayView<FUnitOctreeDataFragment> OctreeDataList = Context.GetMutableFragmentView<FUnitOctreeDataFragment>();
 			const TConstArrayView<FArmyIdFragment> ArmyIdList = Context.GetFragmentView<FArmyIdFragment>();
-
+			
 			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 			{
 				TargetAcquisitionSubsystem->UpdatePossibleTargetEntity(Context.GetEntity(EntityIndex), ArmyIdList[EntityIndex].ArmyId);

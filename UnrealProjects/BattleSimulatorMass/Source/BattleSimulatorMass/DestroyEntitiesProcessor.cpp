@@ -9,6 +9,7 @@ UDestroyEntitiesProcessor::UDestroyEntitiesProcessor()
 	:EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
+	ProcessingPhase = EMassProcessingPhase::PostPhysics;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
 }
 

@@ -35,7 +35,7 @@ public:
 
 private:
 	FVector Origin = FVector(0, 0, 0);
-	double Extent = 4000000.0;
+	double Extent = 1000000.0;
 
 	TArray<int> UnitCounts;
 
