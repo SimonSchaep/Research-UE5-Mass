@@ -109,12 +109,11 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					else
 					{
 						AttackList[EntityIndex].AttackDelayTimer = AttackParams.AnimationAttackDelay;
-					}
-
-					if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
-					{
-						AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
-					}
+						if (AnimStateList[EntityIndex].UnitAnimState == EUnitAnimState::Attacking)
+						{
+							AnimStateList[EntityIndex].UnitAnimState = EUnitAnimState::Idle;
+						}
+					}					
 				}
 			});
 		}));
