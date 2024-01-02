@@ -14,6 +14,11 @@ ABattleSimGameMode::ABattleSimGameMode()
 void ABattleSimGameMode::StartPlay()
 {
 	Super::StartPlay();
+
+	UnitManager->SetSpawnCount(UGameplayStatics::GetIntOption(OptionsString, L"SpawnCount", 0));
+	UnitManager->SetSpawnPosRange(UGameplayStatics::GetIntOption(OptionsString, L"SpawnPosRange", 0));
+
+	StartSpawning();
 }
 
 void ABattleSimGameMode::StartSpawning()
@@ -36,7 +41,10 @@ void ABattleSimGameMode::StartSimulation()
 
 void ABattleSimGameMode::Restart()
 {
-	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false, 
+		FString("SpawnCount=" + UnitManager->GetSpawnCount()) + 
+		FString("\nSpawnPosRange=" + UnitManager->GetSpawnPosRange())
+	);
 }
 
 bool ABattleSimGameMode::HasSpawned() const

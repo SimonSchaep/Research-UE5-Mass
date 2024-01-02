@@ -29,12 +29,18 @@ public:
 
 	void SpawnUnits();
 
+	void SetSpawnCount(int Count);
+	int GetSpawnCount()const;
+
+	void SetSpawnPosRange(int Range);
+	int GetSpawnPosRange()const;
+
 private:
 	void SpawnUnit(const FTransform& SpawnTransform);
 
 	TArray<TArray<AActor*>> Units;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int SpawnCount = 100;
 
 	UPROPERTY(EditAnywhere)

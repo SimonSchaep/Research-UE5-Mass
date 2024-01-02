@@ -20,7 +20,8 @@ public:
 
 	virtual void StartPlay()override;
 
-	class UUnitManager* GetUnitManager()const;
+	UFUNCTION(BlueprintCallable)
+		class UUnitManager* GetUnitManager()const;
 
 	UFUNCTION(BlueprintCallable)
 		void StartSpawning();

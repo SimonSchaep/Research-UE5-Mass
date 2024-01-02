@@ -79,6 +79,26 @@ void UUnitManager::SpawnUnits()
 	}
 }
 
+void UUnitManager::SetSpawnCount(int Count)
+{
+	SpawnCount = Count;
+}
+
+int UUnitManager::GetSpawnCount() const
+{
+	return SpawnCount;
+}
+
+void UUnitManager::SetSpawnPosRange(int Range)
+{
+	SpawnPosRange = Range;
+}
+
+int UUnitManager::GetSpawnPosRange() const
+{
+	return SpawnPosRange;
+}
+
 void UUnitManager::SpawnUnit(const FTransform& SpawnTransform)
 {
 	AActor* SpawnedActor = GetWorld()->SpawnActor(UnitTemplate, &SpawnTransform);
