@@ -10,6 +10,7 @@
 #include "UnitFragments.h"
 #include "UnitTags.h"
 #include "MassSimulationLOD.h"
+#include "MassEntityView.h"
 #include "Kismet/GameplayStatics.h"
 #include "BattleSimGameMode.h"
 #include "NavigationPath.h"
@@ -72,8 +73,8 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 
 				const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
 				if (!EntityManager.IsEntityValid(TargetEntity)) continue;
-				const auto& DataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FTransformFragment::StaticStruct());
-				const FVector& TargetEntityLocation = DataStruct.Get<FTransformFragment>().GetTransform().GetLocation();
+				FMassEntityView EntityView{ EntityManager, TargetEntity };
+				const FVector& TargetEntityLocation = EntityView.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 
 #ifdef ENABLE_MULTITHREADING
 				FNavAgentProperties NavAgentProperties{};
@@ -91,8 +92,8 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 						if (!EntityManager.IsEntityValid(TargetEntity)) return;
 						if (!EntityManager.IsEntityValid(Entity)) return;
 
-						const auto& DataStruct = EntityManager.GetFragmentDataStruct(Entity, FMassMoveTargetFragment::StaticStruct());
-						FMassMoveTargetFragment& MoveTarget = DataStruct.Get<FMassMoveTargetFragment>();
+						FMassEntityView EntityView{ EntityManager, Entity };
+						FMassMoveTargetFragment& MoveTarget = EntityView.GetFragmentData<FMassMoveTargetFragment>();
 
 						if (NavPath->GetPathPoints().Num() >= 2 && ResultType == ENavigationQueryResult::Type::Success)
 						{
@@ -105,11 +106,14 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 						}
 					});
 
+				//Set temporary target until path is found
+				MoveTarget.Center = TargetEntityLocation;
+
 				//Find path
 				NavigationSystem->FindPathAsync(NavAgentProperties, NavParams, Delegate, EPathFindingMode::Regular);
 #else
 				//Find path
-				UNavigationPath* NavigationPath = NavigationSystem->FindPathToLocationSynchronously(GetWorld(), Transform.GetLocation(), TargetEntityTransform.GetTransform().GetLocation());
+				UNavigationPath* NavigationPath = NavigationSystem->FindPathToLocationSynchronously(GetWorld(), Transform.GetLocation(), TargetEntityLocation);
 				if (NavigationPath->PathPoints.Num() >= 2)
 				{
 					const FVector& Target = NavigationPath->PathPoints[1]; //Take point after starting point of path 
