@@ -100,9 +100,9 @@ void UDyingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionC
 
 				//Create new dead entity
 				Context.Defer().PushCommand<FMassDeferredCreateCommand>(
-					[&](FMassEntityManager& EntityManager)
+					[this, RepresentationSubsystem, DeathParams, Transform, ArmyId](FMassEntityManager& EntityManager)
 					{
-						//Spawn entity				
+						//Spawn entity
 						TArray<FMassEntityHandle> SpawnedEntities{};
 						const FMassEntityTemplate EntityTemplate = DeathParams.DeadEntityConfig->GetConfig().GetOrCreateEntityTemplate(*GetWorld());
 						SpawnerSubsystem->SpawnEntities(EntityTemplate, 1, SpawnedEntities);
