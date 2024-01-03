@@ -10,12 +10,12 @@
  * 
  */
 UCLASS()
-class BATTLESIMULATORMASS_API UUnitOrientationTranslator : public UMassTranslator
+class BATTLESIMULATORMASS_API UUnitTransformTranslator : public UMassTranslator
 {
 	GENERATED_BODY()
 
 public:
-	UUnitOrientationTranslator();
+	UUnitTransformTranslator();
 
 protected:
 	virtual void ConfigureQueries() override;
@@ -23,3 +23,4 @@ protected:
 
 	FMassEntityQuery EntityQuery;
 };
+

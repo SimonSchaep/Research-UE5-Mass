@@ -96,9 +96,9 @@ protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
 };
 
-// OrientationSync
+// TransformSync
 UCLASS()
-class BATTLESIMULATORMASS_API UUnitOrientationSyncTrait : public UMassEntityTraitBase
+class BATTLESIMULATORMASS_API UUnitTransformSyncTrait : public UMassEntityTraitBase
 {
 	GENERATED_BODY()
 

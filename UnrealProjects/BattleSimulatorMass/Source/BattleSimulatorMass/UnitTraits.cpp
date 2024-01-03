@@ -7,6 +7,7 @@
 #include "MassEntityTemplateRegistry.h"
 #include "MassEntityTemplate.h"
 #include "UnitTranslators.h"
+#include "MassEntityView.h"
 #include "Translators/MassSceneComponentLocationTranslator.h"
 
 // ArmyId
@@ -70,15 +71,26 @@ void UUnitAnimationTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildCo
 	BuildContext.AddFragment<FUnitAnimStateFragment>();
 }
 
-// OrientationSync
-void UUnitOrientationSyncTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
+// TransformSync
+void UUnitTransformSyncTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
-	BuildContext.RequireFragment<FTransformFragment>();
-	BuildContext.RequireFragment<FMassSceneComponentWrapperFragment>();
+	BuildContext.AddFragment<FTransformFragment>();
+	BuildContext.AddFragment<FMassSceneComponentWrapperFragment>();
 
-	BuildContext.AddTag<FSyncRotationTag>();
+	BuildContext.AddTag<FSyncTransformTag>();
 
-	BuildContext.AddTranslator<UUnitOrientationTranslator>();
+	BuildContext.GetMutableObjectFragmentInitializers().Add([=](UObject& Owner, FMassEntityView& EntityView, const EMassTranslationDirection CurrentDirection)
+		{
+			AActor* AsActor = Cast<AActor>(&Owner);
+			if (AsActor && AsActor->GetRootComponent())
+			{
+				USceneComponent* Component = AsActor->GetRootComponent();
+				FMassSceneComponentWrapperFragment& ComponentFragment = EntityView.GetFragmentData<FMassSceneComponentWrapperFragment>();
+				ComponentFragment.Component = Component;
+			}
+		});
+
+	BuildContext.AddTranslator<UUnitTransformTranslator>();
 }
 
 // Visualization

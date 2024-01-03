@@ -9,7 +9,7 @@
 #include "UnitTags.h"
 #include "Translators/MassSceneComponentLocationTranslator.h"
 
-UUnitOrientationTranslator::UUnitOrientationTranslator()
+UUnitTransformTranslator::UUnitTransformTranslator()
 	: EntityQuery{ *this }
 {
 	bAutoRegisterWithProcessingPhases = true;
@@ -19,17 +19,17 @@ UUnitOrientationTranslator::UUnitOrientationTranslator()
 	bRequiresGameThreadExecution = true;
 }
 
-void UUnitOrientationTranslator::ConfigureQueries()
+void UUnitTransformTranslator::ConfigureQueries()
 {
 	EntityQuery.AddRequirement<FMassSceneComponentWrapperFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
-	EntityQuery.AddTagRequirement<FSyncRotationTag>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FSyncTransformTag>(EMassFragmentPresence::All);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 	EntityQuery.RequireMutatingWorldAccess();
 }
 
-void UUnitOrientationTranslator::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+void UUnitTransformTranslator::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
 		{
@@ -43,7 +43,7 @@ void UUnitOrientationTranslator::Execute(FMassEntityManager& EntityManager, FMas
 				if (USceneComponent* SceneComponent = SceneComponentList[EntityIndex].Component.Get())
 				{
 					const FTransformFragment& Transform = TransformList[EntityIndex];
-					SceneComponent->SetWorldRotation(Transform.GetTransform().GetRotation());
+					SceneComponent->SetWorldTransform(Transform.GetTransform());
 				}
 			}
 		});

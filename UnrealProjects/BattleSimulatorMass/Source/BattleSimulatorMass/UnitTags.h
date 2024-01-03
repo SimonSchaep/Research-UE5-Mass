@@ -22,13 +22,7 @@ struct BATTLESIMULATORMASS_API FDeadTag : public FMassTag
 };
 
 USTRUCT()
-struct BATTLESIMULATORMASS_API FSyncRotationTag : public FMassTag
-{
-	GENERATED_BODY()
-};
-
-USTRUCT()
-struct BATTLESIMULATORMASS_API FStandingStillTag : public FMassTag
+struct BATTLESIMULATORMASS_API FSyncTransformTag : public FMassTag
 {
 	GENERATED_BODY()
 };
