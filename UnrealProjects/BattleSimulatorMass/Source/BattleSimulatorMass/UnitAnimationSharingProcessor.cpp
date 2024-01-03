@@ -12,7 +12,7 @@ UUnitAnimationSharingProcessor::UUnitAnimationSharingProcessor(const FObjectInit
 {
 }
 
-void UUnitAnimationSharingProcessor::ProcessActorState_Internal(int32& OutState, AActor* InActor, uint8 CurrentState, uint8 OnDemandState, bool& bShouldProcess)
+void UUnitAnimationSharingProcessor::ProcessActorState_Implementation(int32& OutState, AActor* InActor, uint8 CurrentState, uint8 OnDemandState, bool& bShouldProcess)
 {
 	FMassEntityHandle EntityHandle{};
 	if (UMassAgentComponent* MassAgent = InActor->GetComponentByClass<UMassAgentComponent>())
