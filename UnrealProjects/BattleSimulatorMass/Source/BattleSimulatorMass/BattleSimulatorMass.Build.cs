@@ -11,7 +11,7 @@ public class BattleSimulatorMass : ModuleRules
         PrivateDefinitions.Add("ENABLE_MULTITHREADING");
         PrivateDefinitions.Add("ENABLE_SPATIAL");
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StructUtils", "AIModule", "NavigationSystem", "GeometryCore",
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StructUtils", "AIModule", "NavigationSystem", "GeometryCore", "AnimationSharing",
             "MassAIDebug", 
 			"MassEntity", 
 			"MassActors", 

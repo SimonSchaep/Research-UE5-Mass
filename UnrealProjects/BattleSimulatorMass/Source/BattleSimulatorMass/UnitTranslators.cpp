@@ -24,6 +24,8 @@ void UUnitOrientationTranslator::ConfigureQueries()
 	EntityQuery.AddRequirement<FMassSceneComponentWrapperFragment>(EMassFragmentAccess::ReadOnly);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FSyncRotationTag>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
+	EntityQuery.AddTagRequirement<FDyingTag>(EMassFragmentPresence::None);
 	EntityQuery.RequireMutatingWorldAccess();
 }
 

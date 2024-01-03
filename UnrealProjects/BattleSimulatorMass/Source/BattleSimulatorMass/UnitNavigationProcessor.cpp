@@ -93,7 +93,9 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				}
 				else
 				{
-					MoveTarget.Center = TargetEntityLocation;
+					FNavLocation NavLocation;
+					NavigationSystem->ProjectPointToNavigation(TargetEntityLocation, NavLocation);
+					MoveTarget.Center = NavLocation.Location;
 				}
 			});
 #else
@@ -131,7 +133,9 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				}
 				else
 				{
-					MoveTarget.Center = TargetEntityLocation;
+					FNavLocation NavLocation;
+					NavigationSystem->ProjectPointToNavigation(TargetEntityLocation, NavLocation);
+					MoveTarget.Center = NavLocation.Location;
 				}
 			}
 #endif // ENABLE_MULTITHREADING
