@@ -6,9 +6,8 @@
 #include "MassEntityTypes.h"
 #include "UnitTags.generated.h"
 
-/**
- * 
- */
+
+
 USTRUCT()
 struct BATTLESIMULATORMASS_API FDyingTag : public FMassTag
 {

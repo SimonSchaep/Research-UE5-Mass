@@ -7,6 +7,8 @@
 #include "Math/GenericOctree.h"
 
 
+// See GenericOctree.h for more information
+
 typedef TSharedRef<struct FUnitOctreeId, ESPMode::ThreadSafe> FUnitOctreeIdSharedRef;
 
 struct FUnitOctreeId : public TSharedFromThis<FUnitOctreeId, ESPMode::ThreadSafe>

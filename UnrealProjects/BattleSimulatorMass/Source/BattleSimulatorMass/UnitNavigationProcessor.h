@@ -6,9 +6,9 @@
 #include "MassProcessor.h"
 #include "UnitNavigationProcessor.generated.h"
 
-/**
- * 
- */
+
+// Processor that finds a navigationpath towards the acquired target
+
 UCLASS()
 class BATTLESIMULATORMASS_API UUnitNavigationProcessor : public UMassProcessor
 {

@@ -6,9 +6,8 @@
 #include "MassProcessor.h"
 #include "MovementProcessor.generated.h"
 
-/**
- * 
- */
+// Processor that handles whether a unit should move or not, and sets some variables accordingly 
+
 UCLASS()
 class BATTLESIMULATORMASS_API UMovementProcessor : public UMassProcessor
 {

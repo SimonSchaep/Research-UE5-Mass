@@ -24,6 +24,7 @@ void UTargetAcquisitionSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//Disabling tick doesn't seem to work, so we use this return instead
 #ifdef ENABLE_SPATIAL
 	return;
 #endif // ENABLE_SPATIAL
@@ -40,7 +41,7 @@ void UTargetAcquisitionSubsystem::Tick(float DeltaTime)
 
 void UTargetAcquisitionSubsystem::AddPossibleTargetEntity(const FMassEntityHandle& Handle, int ArmyId)
 {
-	//Add armies until armyid
+	//Add armies until armyid, to ensure we don't go out of bounds
 	while (ArmyId >= PossibleTargetEntities.Num())
 	{
 		PossibleTargetEntities.Add(TArray<FMassEntityHandle>());

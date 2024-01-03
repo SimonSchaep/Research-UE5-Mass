@@ -6,6 +6,7 @@
 #include "MassCommonFragments.h"
 #include "MassMovementFragments.h"
 #include "UnitTags.h"
+#include "MassEntityView.h"
 #include "MassExecutionContext.h"
 #include "TargetAcquisitionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,12 +54,11 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 			const FUnitAttackParameters& AttackParams = Context.GetConstSharedFragment<FUnitAttackParameters>();
 			const float WorldDeltaTime = Context.GetDeltaTimeSeconds();
 
-
 			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)
 			{
 				const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
 
-				if (TargetEntity.IsValid() && TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
+				if (EntityManager.IsEntityValid(TargetEntity) && TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
 				{
 					//Timer
 					if (AttackList[EntityIndex].AttackDelayTimer > 0)
@@ -79,12 +79,12 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 
 					// ATTACK
 
-					//Increase timer
+					//Reset timer
 					AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
 					//Get health fragment
-					auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
-					FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
+					FMassEntityView EntityView = FMassEntityView(EntityManager, TargetEntity);
+					FUnitHealthFragment& TargetEntityHealth = EntityView.GetFragmentData<FUnitHealthFragment>();
 
 					//Do damage
 					TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
@@ -102,7 +102,7 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 				}
 				else
 				{
-					//Count down timer until anim delay
+					//Count down timer until anim delay, so we are ready for the next attack
 					if (AttackList[EntityIndex].AttackDelayTimer > AttackParams.AnimationAttackDelay)
 					{
 						AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;
@@ -131,7 +131,9 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 
 				for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 				{
-					if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
+					const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
+
+					if (EntityManager.IsEntityValid(TargetEntity) && TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(AttackParams.Range))
 					{
 						//Timer
 						if (AttackList[EntityIndex].AttackDelayTimer > 0)
@@ -156,10 +158,8 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 						AttackList[EntityIndex].AttackDelayTimer += AttackParams.AttackDelay;
 
 						//Get health fragment
-						const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
-						if (!TargetEntity.IsValid()) continue;
-						auto HealthDataStruct = EntityManager.GetFragmentDataStruct(TargetEntity, FUnitHealthFragment::StaticStruct());
-						FUnitHealthFragment& TargetEntityHealth = HealthDataStruct.Get<FUnitHealthFragment>();
+						FMassEntityView EntityView = FMassEntityView(EntityManager, TargetEntity);
+						FUnitHealthFragment& TargetEntityHealth = EntityView.GetFragmentData<FUnitHealthFragment>();
 
 						//Do damage
 						TargetEntityHealth.CurrentHealth -= AttackParams.Damage;
@@ -174,7 +174,7 @@ void UAttackProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 					}
 					else
 					{
-						//Count down timer until anim delay
+						//Count down timer until anim delay, so we are ready for the next attack
 						if (AttackList[EntityIndex].AttackDelayTimer > AttackParams.AnimationAttackDelay)
 						{
 							AttackList[EntityIndex].AttackDelayTimer -= WorldDeltaTime;

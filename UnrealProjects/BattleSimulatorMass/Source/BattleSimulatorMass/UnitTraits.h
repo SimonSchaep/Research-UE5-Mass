@@ -28,7 +28,7 @@ protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
 
 private:
-	UPROPERTY(Category = "Attack", EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		FUnitAttackParameters AttackParameters;
 };
 
@@ -57,7 +57,7 @@ protected:
 
 private:
 
-	UPROPERTY(EditAnywhere, Category = "Mass|Health")
+	UPROPERTY(EditAnywhere)
 		float Health = 0;
 };
 
@@ -71,7 +71,7 @@ protected:
 	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World)const override;
 
 private:
-	UPROPERTY(Category = "Movement", EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		FUnitMoveParameters MoveParameters;
 };
 

@@ -33,6 +33,7 @@ void UTargetAcquisitionOctreeSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//Disabling tick doesn't seem to work, so we use this return instead
 #ifndef ENABLE_SPATIAL
 	return;
 #endif // ENABLE_SPATIAL
@@ -48,6 +49,7 @@ void UTargetAcquisitionOctreeSubsystem::Tick(float DeltaTime)
 		}			
 	}
 
+	//Debug drawing code copied from: https://dev.epicgames.com/community/snippets/2eB/toctree2
 	if (bDrawDebug)
 	{
 		for (const FUnitOctree& Octree : Octrees)
@@ -86,7 +88,7 @@ void UTargetAcquisitionOctreeSubsystem::Tick(float DeltaTime)
 
 void UTargetAcquisitionOctreeSubsystem::AddPossibleTargetEntity(const FMassEntityHandle& Entity, int ArmyId)
 {
-	//Add octrees until armyid
+	//Add octrees until armyid, to ensure we don't go out of bounds
 	while (ArmyId >= Octrees.Num())
 	{
 		Octrees.Add(FUnitOctree{Origin, Extent});
@@ -133,7 +135,7 @@ void UTargetAcquisitionOctreeSubsystem::UpdatePossibleTargetEntity(const FMassEn
 	FUnitOctreeElement ElementCopy = Octrees[ArmyId].GetElementById(Id);
 	//Remove element
 	Octrees[ArmyId].RemoveElement(Id);
-	//Updae bounds
+	//Update bounds
 	ElementCopy.Bounds = Bounds;
 	//Insert element in Octree
 	Octrees[ArmyId].AddElement(ElementCopy);

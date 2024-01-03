@@ -6,9 +6,8 @@
 #include "MassProcessor.h"
 #include "AttackProcessor.generated.h"
 
-/**
- * 
- */
+// Processor that handles attacking and taking damage logic of units
+
 UCLASS()
 class BATTLESIMULATORMASS_API UAttackProcessor : public UMassProcessor
 {

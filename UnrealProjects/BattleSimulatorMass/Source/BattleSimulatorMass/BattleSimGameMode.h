@@ -6,9 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "BattleSimGameMode.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class BATTLESIMULATORMASS_API ABattleSimGameMode : public AGameModeBase
 {

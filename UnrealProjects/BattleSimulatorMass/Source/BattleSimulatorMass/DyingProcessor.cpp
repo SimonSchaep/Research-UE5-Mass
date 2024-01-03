@@ -100,23 +100,22 @@ void UDyingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionC
 
 				//Create new dead entity
 				Context.Defer().PushCommand<FMassDeferredCreateCommand>(
-					[this, RepresentationSubsystem, DeathParams, Transform, ArmyId](FMassEntityManager& EntityManager)
+					[&](FMassEntityManager& EntityManager)
 					{
 						//Spawn entity				
 						TArray<FMassEntityHandle> SpawnedEntities{};
 						const FMassEntityTemplate EntityTemplate = DeathParams.DeadEntityConfig->GetConfig().GetOrCreateEntityTemplate(*GetWorld());
 						SpawnerSubsystem->SpawnEntities(EntityTemplate, 1, SpawnedEntities);
 
+						FMassEntityView EntityView = FMassEntityView(EntityManager, SpawnedEntities[0]);
+
 						//Set transform
-						auto DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FTransformFragment::StaticStruct());
-						FTransformFragment& SpawnedEntityTransform = DataStruct.Get<FTransformFragment>();
+						FTransformFragment& SpawnedEntityTransform = EntityView.GetFragmentData<FTransformFragment>();
 						SpawnedEntityTransform.SetTransform(Transform);
 
-						//Set representation
-						auto view = FMassEntityView(EntityManager, SpawnedEntities[0]);
-						const FUnitVisualizationParameters& SpawnedEntityVisualizationParams = view.GetConstSharedFragmentData<FUnitVisualizationParameters>();
-						DataStruct = EntityManager.GetFragmentDataStruct(SpawnedEntities[0], FMassRepresentationFragment::StaticStruct());
-						FMassRepresentationFragment& SpawnedEntityRepresentation = DataStruct.Get<FMassRepresentationFragment>();
+						//Set representation data					
+						const FUnitVisualizationParameters& SpawnedEntityVisualizationParams = EntityView.GetConstSharedFragmentData<FUnitVisualizationParameters>();
+						FMassRepresentationFragment& SpawnedEntityRepresentation = EntityView.GetFragmentData<FMassRepresentationFragment>();
 
 						TSubclassOf<AActor> LowResTemplateActor = SpawnedEntityVisualizationParams.LowResTemplateActors[FMath::Min(ArmyId, SpawnedEntityVisualizationParams.LowResTemplateActors.Num() - 1)];
 						TSubclassOf<AActor> HighResTemplateActor = SpawnedEntityVisualizationParams.HighResTemplateActors[FMath::Min(ArmyId, SpawnedEntityVisualizationParams.HighResTemplateActors.Num() - 1)];

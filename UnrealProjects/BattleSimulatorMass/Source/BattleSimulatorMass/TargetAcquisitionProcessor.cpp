@@ -79,8 +79,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						continue;
 					}
 
-					//Approximate
-					int count{};
+					//Approximate the closest target
 					Octrees[OctreeIndex].FindNearbyElements(TransformList[EntityIndex].GetTransform().GetLocation(), [&](const FUnitOctreeElement& OctreeElement)
 						{
 							const FMassEntityHandle& Handle = OctreeElement.EntityHandle;
@@ -94,7 +93,6 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 								TargetAcquisitionList[EntityIndex].CurrentTarget = Handle;
 								ClosestDistanceSqr = DistanceSqr;
 							}
-							count++;
 						});
 
 
@@ -118,9 +116,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 								TargetAcquisitionList[EntityIndex].CurrentTarget = Handle;
 								ClosestDistanceSqr = DistanceSqr;
 							}
-							count++;
 						});
-					count = count;
 				}
 #else
 				//Loop over all entities in TargetAcquisitionSubsystem

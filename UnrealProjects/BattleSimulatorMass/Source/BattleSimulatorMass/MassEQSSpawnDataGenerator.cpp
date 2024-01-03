@@ -7,6 +7,8 @@
 #include "VisualLogger/VisualLogger.h"
 #include "MassGameplaySettings.h"
 
+//This class is based on UMassEntityEQSSpawnPointsGenerator, only some slight adjustments were made
+
 UMassEQSSpawnDataGenerator::UMassEQSSpawnDataGenerator()
 {
 	EQSRequest.RunMode = EEnvQueryRunMode::AllMatching;
@@ -32,7 +34,6 @@ void UMassEQSSpawnDataGenerator::Generate(UObject& QueryOwner, TConstArrayView<F
 	}
 
 	// Build array of entity types to spawn.
-	// @todo: I dont like that this get's passed by value to OnEQSQueryFinished, but seemed like the cleanest solution.
 	TArray<FMassEntitySpawnDataGeneratorResult> Results;
 	BuildResultsFromEntityTypes(Count, EntityTypes, Results);
 

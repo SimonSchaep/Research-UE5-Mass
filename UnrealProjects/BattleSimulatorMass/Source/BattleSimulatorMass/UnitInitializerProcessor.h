@@ -7,7 +7,7 @@
 #include "UnitInitializerProcessor.generated.h"
 
 
-//Based on UMassSpawnLocationProcessor
+//This class is based on UMassSpawnLocationProcessor, only some slight adjustments were made
 
 UCLASS()
 class BATTLESIMULATORMASS_API UUnitInitializerProcessor : public UMassProcessor

@@ -6,9 +6,8 @@
 #include "MassProcessor.h"
 #include "UpdateOctreeDataProcessor.generated.h"
 
-/**
- * 
- */
+// Processor that updates the octree based on where all entities are
+
 UCLASS()
 class BATTLESIMULATORMASS_API UUpdateOctreeDataProcessor : public UMassProcessor
 {

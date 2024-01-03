@@ -6,6 +6,7 @@
 #include "MassProcessor.h"
 #include "TargetAcquisitionProcessor.generated.h"
 
+// Processor that acquires the closest enemy target for every unit
 
 UCLASS()
 class BATTLESIMULATORMASS_API UTargetAcquisitionProcessor : public UMassProcessor

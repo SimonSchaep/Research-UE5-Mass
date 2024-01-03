@@ -25,7 +25,7 @@ struct FMassEntitySpawnVars
 	FQuat SpawnRotationOverride{};
 };
 
-//Based on FMassTransformsSpawnData
+//This struct is based on FMassTransformsSpawnData, only some slight adjustments were made
 USTRUCT()
 struct FMassEntitySpawnData
 {
@@ -37,11 +37,10 @@ struct FMassEntitySpawnData
 	using FTransformsContainerType = TArray<FTransform>;
 	FTransformsContainerType Transforms;
 
-
 	FMassEntitySpawnVars SpawnVars;
 };
 
-//Based on UMassEntityEQSSpawnPointsGenerator
+//This class is based on UMassEntityEQSSpawnPointsGenerator, only some slight adjustments were made
 UCLASS(BlueprintType, meta = (DisplayName = "EQS SpawnData Generator"))
 class BATTLESIMULATORMASS_API UMassEQSSpawnDataGenerator : public UMassEntitySpawnDataGeneratorBase
 {

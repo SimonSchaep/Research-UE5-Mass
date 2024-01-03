@@ -75,7 +75,7 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				FMassEntityView EntityView{ EntityManager, TargetEntity };
 				const FVector& TargetEntityLocation = EntityView.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 
-
+				//Configure path query params
 				FNavAgentProperties NavAgentProperties{};
 				FPathFindingQuery NavParams{};
 				NavParams.NavData = NavigationSystem->MainNavData;
@@ -115,7 +115,7 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				FMassEntityView EntityView{ EntityManager, TargetEntity };
 				const FVector& TargetEntityLocation = EntityView.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 
-
+				//Configure path query params
 				FNavAgentProperties NavAgentProperties{};
 				FPathFindingQuery NavParams{};
 				NavParams.NavData = NavigationSystem->MainNavData;

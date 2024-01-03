@@ -8,7 +8,6 @@
 #include "UnitOctreeTypes.h"
 #include "TargetAcquisitionOctreeSubsystem.generated.h"
 
-//Made similar to SmartObjectOctree
 
 
 UCLASS()

@@ -6,9 +6,8 @@
 #include "MassProcessor.h"
 #include "DyingProcessor.generated.h"
 
-/**
- * 
- */
+// Processor that handles units that are dying, removes most of their logic, and spawns new "dead" entities to replace them
+
 UCLASS()
 class BATTLESIMULATORMASS_API UDyingProcessor : public UMassProcessor
 {

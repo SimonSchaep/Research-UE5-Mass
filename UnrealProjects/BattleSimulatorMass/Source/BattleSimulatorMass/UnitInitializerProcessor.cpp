@@ -14,7 +14,7 @@
 #include "MassRepresentationFragments.h"
 #include "MassRepresentationSubsystem.h"
 
-//Based on UMassSpawnLocationProcessor
+//This class is based on UMassSpawnLocationProcessor, only some slight adjustments were made
 
 UUnitInitializerProcessor::UUnitInitializerProcessor()
 	:EntityQuery{ *this }

@@ -6,9 +6,8 @@
 #include "MassProcessor.h"
 #include "DestroyEntitiesProcessor.generated.h"
 
-/**
- * 
- */
+// Processor that handles destruction of entities
+
 UCLASS()
 class BATTLESIMULATORMASS_API UDestroyEntitiesProcessor : public UMassProcessor
 {
