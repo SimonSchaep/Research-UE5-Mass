@@ -69,6 +69,7 @@ void UTargetAcquisitionComponent::FindClosestTarget()
 	if (ClosestTargetDistanceSqr == FLT_MAX)
 	{
 		ClosestTargetDistanceSqr = 0;
+		ClosestTarget = nullptr;
 	}
 }
 

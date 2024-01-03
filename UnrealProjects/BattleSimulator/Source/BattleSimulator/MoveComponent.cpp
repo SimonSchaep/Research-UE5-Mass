@@ -5,6 +5,7 @@
 #include "TargetAcquisitionComponent.h"
 #include "AIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 
 // Sets default values for this component's properties
 UMoveComponent::UMoveComponent()
@@ -35,6 +36,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTarget() == nullptr)
 	{
+		AIController->StopMovement();
 		bIsMoving = false;
 		return;
 	}
@@ -43,7 +45,10 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
-		AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), 0);
+		if (AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), 0) == EPathFollowingRequestResult::Type::Failed)
+		{
+			AIController->MoveToLocation(AIController->GetNavAgentLocation());
+		}
 		bIsMoving = true;
 	}
 	else

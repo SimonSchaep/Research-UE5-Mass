@@ -30,6 +30,8 @@ private:
 
 	class AAIController* AIController;
 
+	class UNavigationSystemV1* NavigationSystem;
+
 	float StopRangeSqr;
 
 	bool bIsMoving = false;

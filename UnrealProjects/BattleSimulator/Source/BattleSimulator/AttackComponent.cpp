@@ -33,7 +33,7 @@ void UAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() <= RangeSqr)
+	if (TargetAcquisitionComponent->GetClosestTarget() != nullptr && TargetAcquisitionComponent->GetClosestTargetDistanceSqr() <= RangeSqr)
 	{
 		if (AttackDelayTimer > 0)
 		{
