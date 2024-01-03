@@ -91,10 +91,10 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 					const FVector& Target = Result.Path->GetPathPoints()[1]; //Take point after starting point of path 
 					MoveTarget.Center = Target;
 				}
-				else
+				else //We are outside navmesh, try to get back
 				{
-					FNavLocation NavLocation;
-					NavigationSystem->ProjectPointToNavigation(TargetEntityLocation, NavLocation);
+					FNavLocation NavLocation{};
+					NavigationSystem->ProjectPointToNavigation(Transform.GetLocation(), NavLocation, FVector(1000,1000,1000));
 					MoveTarget.Center = NavLocation.Location;
 				}
 			});
@@ -131,10 +131,10 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 					const FVector& Target = Result.Path->GetPathPoints()[1]; //Take point after starting point of path 
 					MoveTarget.Center = Target;
 				}
-				else
+				else //We are outside navmesh, try to get back
 				{
-					FNavLocation NavLocation;
-					NavigationSystem->ProjectPointToNavigation(TargetEntityLocation, NavLocation);
+					FNavLocation NavLocation{};
+					NavigationSystem->ProjectPointToNavigation(Transform.GetLocation(), NavLocation, FVector(1000, 1000, 1000));
 					MoveTarget.Center = NavLocation.Location;
 				}
 			}
