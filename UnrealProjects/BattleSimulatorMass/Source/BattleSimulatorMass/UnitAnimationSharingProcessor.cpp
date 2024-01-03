@@ -32,7 +32,7 @@ void UUnitAnimationSharingProcessor::ProcessActorState_Internal(int32& OutState,
 	auto DataStruct = EntityManager->GetFragmentDataStruct(EntityHandle, FUnitAnimStateFragment::StaticStruct());
 	if (!DataStruct.IsValid()) return;
 	const FUnitAnimStateFragment& UnitAnimStateFragment = DataStruct.Get<FUnitAnimStateFragment>();
-	OutState = int32(UnitAnimStateFragment.UnitAnimState);
 
+	OutState = int32(UnitAnimStateFragment.UnitAnimState);
 	bShouldProcess = true;
 }

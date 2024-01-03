@@ -8,8 +8,8 @@ public class BattleSimulatorMass : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-        //PrivateDefinitions.Add("ENABLE_MULTITHREADING");
-        //PrivateDefinitions.Add("ENABLE_SPATIAL");
+        PrivateDefinitions.Add("ENABLE_MULTITHREADING");
+        PrivateDefinitions.Add("ENABLE_SPATIAL");
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "StructUtils", "AIModule", "NavigationSystem", "GeometryCore",
             "MassAIDebug", 

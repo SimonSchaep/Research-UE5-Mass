@@ -30,7 +30,7 @@ struct FUnitOctreeElement
 
 struct FUnitOctreeSemantics
 {
-	enum { MaxElementsPerLeaf = 16 };
+	enum { MaxElementsPerLeaf = 64 };
 	enum { MinInclusiveElementsPerNode = 7 };
 	enum { MaxNodeDepth = 12 };
 

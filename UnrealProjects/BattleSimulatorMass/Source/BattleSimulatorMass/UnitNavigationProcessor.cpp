@@ -22,7 +22,6 @@ UUnitNavigationProcessor::UUnitNavigationProcessor()
 	bAutoRegisterWithProcessingPhases = true;
 	ExecutionFlags = int32(EProcessorExecutionFlags::All);
 	ProcessingPhase = EMassProcessingPhase::PrePhysics;
-	bRequiresGameThreadExecution = true; //for navigationsystem
 }
 
 void UUnitNavigationProcessor::Initialize(UObject& Owner)
@@ -59,7 +58,45 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 			const TArrayView<FMassMoveTargetFragment> MoveTargetList = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
 			const FUnitMoveParameters& UnitMoveParams = Context.GetConstSharedFragment<FUnitMoveParameters>();
 
-			//No parallel for cause NavigationSystem requires game thread
+#ifdef ENABLE_MULTITHREADING
+			ParallelFor(Context.GetNumEntities(), [&](int32 EntityIndex)
+			{
+				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(UnitMoveParams.StopDistance))
+				{
+					return;
+				}
+
+				//Get data
+				FMassMoveTargetFragment& MoveTarget = MoveTargetList[EntityIndex];
+				const FTransform& Transform = TransformList[EntityIndex].GetTransform();
+
+				const FMassEntityHandle& TargetEntity = TargetAcquisitionList[EntityIndex].CurrentTarget;
+				if (!EntityManager.IsEntityValid(TargetEntity)) return;
+				FMassEntityView EntityView{ EntityManager, TargetEntity };
+				const FVector& TargetEntityLocation = EntityView.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
+
+
+				FNavAgentProperties NavAgentProperties{};
+				FPathFindingQuery NavParams{};
+				NavParams.NavData = NavigationSystem->MainNavData;
+				NavParams.QueryFilter = NavParams.NavData->GetDefaultQueryFilter();
+				NavParams.StartLocation = Transform.GetLocation();
+				NavParams.EndLocation = TargetEntityLocation;
+
+				//Find path
+				FPathFindingResult Result = NavigationSystem->FindPathSync(NavAgentProperties, NavParams, EPathFindingMode::Regular);
+
+				if (Result.IsSuccessful() && Result.Path->GetPathPoints().Num() >= 2)
+				{
+					const FVector& Target = Result.Path->GetPathPoints()[1]; //Take point after starting point of path 
+					MoveTarget.Center = Target;
+				}
+				else
+				{
+					MoveTarget.Center = TargetEntityLocation;
+				}
+			});
+#else
 			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
 			{
 				if (TargetAcquisitionList[EntityIndex].ClosestTargetDistanceSqr <= FMath::Square(UnitMoveParams.StopDistance))
@@ -76,7 +113,7 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				FMassEntityView EntityView{ EntityManager, TargetEntity };
 				const FVector& TargetEntityLocation = EntityView.GetFragmentData<FTransformFragment>().GetTransform().GetLocation();
 
-#ifdef ENABLE_MULTITHREADING
+
 				FNavAgentProperties NavAgentProperties{};
 				FPathFindingQuery NavParams{};
 				NavParams.NavData = NavigationSystem->MainNavData;
@@ -84,46 +121,19 @@ void UUnitNavigationProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 				NavParams.StartLocation = Transform.GetLocation();
 				NavParams.EndLocation = TargetEntityLocation;
 
-				const FMassEntityHandle& Entity = Context.GetEntity(EntityIndex);
-
-				FNavPathQueryDelegate Delegate;
-				Delegate.BindLambda([&EntityManager, TargetEntityLocation, Entity, TargetEntity](uint32 PathId, ENavigationQueryResult::Type ResultType, FNavPathSharedPtr NavPath)
-					{
-						if (!EntityManager.IsEntityValid(TargetEntity)) return;
-						if (!EntityManager.IsEntityValid(Entity)) return;
-
-						FMassEntityView EntityView{ EntityManager, Entity };
-						FMassMoveTargetFragment& MoveTarget = EntityView.GetFragmentData<FMassMoveTargetFragment>();
-
-						if (NavPath->GetPathPoints().Num() >= 2 && ResultType == ENavigationQueryResult::Type::Success)
-						{
-							const FVector& Target = NavPath->GetPathPoints()[1]; //Take point after starting point of path 
-							MoveTarget.Center = Target;
-						}
-						else
-						{
-							MoveTarget.Center = TargetEntityLocation;
-						}
-					});
-
-				//Set temporary target until path is found
-				MoveTarget.Center = TargetEntityLocation;
-
 				//Find path
-				NavigationSystem->FindPathAsync(NavAgentProperties, NavParams, Delegate, EPathFindingMode::Regular);
-#else
-				//Find path
-				UNavigationPath* NavigationPath = NavigationSystem->FindPathToLocationSynchronously(GetWorld(), Transform.GetLocation(), TargetEntityLocation);
-				if (NavigationPath->PathPoints.Num() >= 2)
+				FPathFindingResult Result = NavigationSystem->FindPathSync(NavAgentProperties, NavParams, EPathFindingMode::Regular);
+
+				if (Result.IsSuccessful() && Result.Path->GetPathPoints().Num() >= 2)
 				{
-					const FVector& Target = NavigationPath->PathPoints[1]; //Take point after starting point of path 
+					const FVector& Target = Result.Path->GetPathPoints()[1]; //Take point after starting point of path 
 					MoveTarget.Center = Target;
 				}
 				else
 				{
 					MoveTarget.Center = TargetEntityLocation;
 				}
-#endif // ENABLE_MULTITHREADING
 			}
+#endif // ENABLE_MULTITHREADING
 		}));
 }

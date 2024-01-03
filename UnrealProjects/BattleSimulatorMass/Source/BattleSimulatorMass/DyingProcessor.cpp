@@ -54,7 +54,6 @@ void UDyingProcessor::ConfigureQueries()
 
 void UDyingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
-	//No multithreading, cause there would need to be too many mutexes
 	EntityQuery.ForEachEntityChunk(EntityManager, Context, ([&](FMassExecutionContext& Context)
 		{
 			const TArrayView<FUnitDeathFragment> DeathList = Context.GetMutableFragmentView<FUnitDeathFragment>();
