@@ -79,7 +79,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						continue;
 					}
 
-					//Approximate the closest target
+					//Check for elements in the same node
 					Octrees[OctreeIndex].FindNearbyElements(TransformList[EntityIndex].GetTransform().GetLocation(), [&](const FUnitOctreeElement& OctreeElement)
 						{
 							const FMassEntityHandle& Handle = OctreeElement.EntityHandle;
@@ -96,7 +96,7 @@ void UTargetAcquisitionProcessor::Execute(FMassEntityManager& EntityManager, FMa
 						});
 
 
-					//Do a precise bounds check to see if there's any closer targets
+					//Do bounds check to see if there's any elements in other nodes that are closer
 					float ClosestDistance = FMath::Sqrt(ClosestDistanceSqr);
 					FBoxCenterAndExtent Bounds{
 						TransformList[EntityIndex].GetTransform().GetLocation(),

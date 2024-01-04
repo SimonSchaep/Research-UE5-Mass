@@ -63,8 +63,8 @@ void UUnitManager::SpawnUnits()
 	for (int i{}; i < SpawnCount; ++i)
 	{
 		SpawnTransform.SetLocation(FVector(
-			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
-			FMath::RandRange(SpawnPosRange/2, SpawnPosRange),
+			FMath::RandRange(MinBounds.X, MaxBounds.X),
+			FMath::RandRange(2500.0, MaxBounds.Y),
 			0));
 		SpawnUnit(SpawnTransform);
 	}
@@ -72,8 +72,8 @@ void UUnitManager::SpawnUnits()
 	for (int i{}; i < SpawnCount; ++i)
 	{
 		SpawnTransform.SetLocation(FVector(
-			FMath::RandRange(-SpawnPosRange, SpawnPosRange),
-			FMath::RandRange(-SpawnPosRange, -SpawnPosRange/2),
+			FMath::RandRange(MinBounds.X, MaxBounds.X),
+			FMath::RandRange(MinBounds.Y, -2500.0),
 			0));
 		SpawnUnit(SpawnTransform);
 	}
@@ -89,14 +89,24 @@ int UUnitManager::GetSpawnCount() const
 	return SpawnCount;
 }
 
-void UUnitManager::SetSpawnPosRange(int Range)
+void UUnitManager::SetMinBounds(const FVector& Bounds)
 {
-	SpawnPosRange = Range;
+	MinBounds = Bounds;
 }
 
-int UUnitManager::GetSpawnPosRange() const
+void UUnitManager::SetMaxBounds(const FVector& Bounds)
 {
-	return SpawnPosRange;
+	MaxBounds = Bounds;
+}
+
+const FVector& UUnitManager::GetMinBounds() const
+{
+	return MinBounds;
+}
+
+const FVector& UUnitManager::GetMaxBounds() const
+{
+	return MaxBounds;
 }
 
 void UUnitManager::SpawnUnit(const FTransform& SpawnTransform)

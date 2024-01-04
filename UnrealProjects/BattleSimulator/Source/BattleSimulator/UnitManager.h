@@ -32,8 +32,10 @@ public:
 	void SetSpawnCount(int Count);
 	int GetSpawnCount()const;
 
-	void SetSpawnPosRange(int Range);
-	int GetSpawnPosRange()const;
+	void SetMinBounds(const FVector& Bounds);
+	void SetMaxBounds(const FVector& Bounds);
+	const FVector& GetMinBounds()const;
+	const FVector& GetMaxBounds()const;
 
 private:
 	void SpawnUnit(const FTransform& SpawnTransform);
@@ -44,7 +46,10 @@ private:
 		int SpawnCount = 100;
 
 	UPROPERTY(EditAnywhere)
-		int SpawnPosRange = 50000;
+		FVector MinBounds{-5000,-5000, 0};
+
+	UPROPERTY(EditAnywhere)
+		FVector MaxBounds{5000, 5000, 0};
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AActor> UnitTemplate;

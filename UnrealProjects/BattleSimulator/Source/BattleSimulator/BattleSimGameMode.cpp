@@ -16,7 +16,16 @@ void ABattleSimGameMode::StartPlay()
 	Super::StartPlay();
 
 	UnitManager->SetSpawnCount(UGameplayStatics::GetIntOption(OptionsString, L"SpawnCount", 0));
-	UnitManager->SetSpawnPosRange(UGameplayStatics::GetIntOption(OptionsString, L"SpawnPosRange", 0));
+	UnitManager->SetMinBounds(FVector(
+		UGameplayStatics::GetIntOption(OptionsString, L"MinBoundsX", 0),
+		UGameplayStatics::GetIntOption(OptionsString, L"MinBoundsY", 0),
+		0
+	));
+	UnitManager->SetMaxBounds(FVector(
+		UGameplayStatics::GetIntOption(OptionsString, L"MaxBoundsX", 0),
+		UGameplayStatics::GetIntOption(OptionsString, L"MaxBoundsY", 0),
+		0
+	));
 
 	StartSpawning();
 }
@@ -43,7 +52,10 @@ void ABattleSimGameMode::Restart()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false, 
 		FString("SpawnCount=" + UnitManager->GetSpawnCount()) + 
-		FString("\nSpawnPosRange=" + UnitManager->GetSpawnPosRange())
+		FString("?MinBoundsX=" + int(UnitManager->GetMinBounds().X)) +
+		FString("?MinBoundsY=" + int(UnitManager->GetMinBounds().Y)) +
+		FString("?MaxBoundsX=" + int(UnitManager->GetMaxBounds().X)) +
+		FString("?MaxBoundsY=" + int(UnitManager->GetMaxBounds().Y))
 	);
 }
 
