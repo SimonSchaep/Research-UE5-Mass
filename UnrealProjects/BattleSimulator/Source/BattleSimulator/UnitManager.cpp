@@ -114,4 +114,3 @@ void UUnitManager::SpawnUnit(const FTransform& SpawnTransform)
 	AActor* SpawnedActor = GetWorld()->SpawnActor(UnitTemplate, &SpawnTransform);
 	Units[NextTeamId].Add(SpawnedActor);
 }
-

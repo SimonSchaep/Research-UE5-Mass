@@ -45,8 +45,10 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (TargetAcquisitionComponent->GetClosestTargetDistanceSqr() > StopRangeSqr)
 	{
+		//Try to move to target actor
 		if (AIController->MoveToActor(TargetAcquisitionComponent->GetClosestTarget(), 0) == EPathFollowingRequestResult::Type::Failed)
 		{
+			//If failed -> we are likely outside the navmesh -> move to the closest point on the navmesh instead
 			AIController->MoveToLocation(AIController->GetNavAgentLocation());
 		}
 		bIsMoving = true;
