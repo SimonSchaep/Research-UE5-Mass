@@ -13,13 +13,9 @@ class BATTLESIMULATOR_API UAttackComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UAttackComponent();
 
-	// Called when the game starts
 	virtual void BeginPlay() override;
-
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	bool IsAttacking()const;

@@ -13,10 +13,8 @@ class BATTLESIMULATOR_API UHealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UHealthComponent();
 
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
