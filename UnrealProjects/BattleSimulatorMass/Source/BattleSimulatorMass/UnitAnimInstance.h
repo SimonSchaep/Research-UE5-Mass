@@ -26,4 +26,6 @@ private:
 
 	FMassEntityHandle EntityHandle;
 
+	FMassEntityManager* EntityManager;
+
 };

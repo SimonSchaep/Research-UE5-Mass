@@ -14,8 +14,8 @@ UUnitManager::UUnitManager()
 	Units.Add(TArray<AActor*>());
 	Units.Add(TArray<AActor*>());
 
-	Units[0].Reserve(SpawnCount/2);
-	Units[1].Reserve(SpawnCount/2);
+	Units[0].Reserve(SpawnCount);
+	Units[1].Reserve(SpawnCount);
 }
 
 // Called when the game starts or when spawned

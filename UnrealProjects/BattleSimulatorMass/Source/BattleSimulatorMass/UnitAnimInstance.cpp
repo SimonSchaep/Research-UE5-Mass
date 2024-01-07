@@ -7,12 +7,12 @@
 
 void UUnitAnimInstance::NativeInitializeAnimation()
 {
+	EntityManager = UE::Mass::Utils::GetEntityManager(GetWorld());
 	TryGetEntityHandle();
 }
 
 void UUnitAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	FMassEntityManager* EntityManager = UE::Mass::Utils::GetEntityManager(GetWorld());
 	if (EntityManager == nullptr) return;
 
 	if (!EntityManager->IsEntityValid(EntityHandle))
@@ -36,7 +36,6 @@ bool UUnitAnimInstance::TryGetEntityHandle()
 	{
 		if (UMassAgentComponent* MassAgent = Owner->GetComponentByClass<UMassAgentComponent>())
 		{
-			FMassEntityManager* EntityManager = UE::Mass::Utils::GetEntityManager(GetWorld());
 			EntityHandle = MassAgent->GetEntityHandle();
 			return EntityManager->IsEntityValid(EntityHandle);
 		}
