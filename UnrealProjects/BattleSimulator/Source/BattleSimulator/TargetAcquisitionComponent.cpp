@@ -64,10 +64,10 @@ void UTargetAcquisitionComponent::FindClosestTarget()
 			ClosestTargetDistanceSqr = DistanceSqr;
 		}
 	}
-
-	//No target was found
+	
 	if (ClosestTargetDistanceSqr == FLT_MAX)
 	{
+		//No target was found
 		ClosestTargetDistanceSqr = 0;
 		ClosestTarget = nullptr;
 	}

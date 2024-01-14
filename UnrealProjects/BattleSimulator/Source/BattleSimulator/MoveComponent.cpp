@@ -55,6 +55,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 	else
 	{
+		//Stop moving, but still rotate to our target
 		AIController->StopMovement();
 		FRotator Rotation = FRotator(0, Direction.ToOrientationRotator().Yaw, 0);
 		GetOwner()->SetActorRotation(Rotation);
