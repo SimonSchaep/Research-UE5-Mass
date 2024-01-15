@@ -2,4 +2,4 @@
 
 These are the files related to a study on this topic.
 
-Traces can be found here: https://drive.google.com/file/d/1dy27FoWe-HDYQR6C2MbmFpC7WUoz_FB9/view?usp=sharing
+Trace files used for measurements can be found here: https://drive.google.com/file/d/1dy27FoWe-HDYQR6C2MbmFpC7WUoz_FB9/view?usp=sharing
